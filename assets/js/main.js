@@ -871,3 +871,47 @@ window.exportData = exportData;
 window.refreshData = refreshData;
 
 console.log('✅ main.js loaded successfully!');
+// ==========================================
+// القائمة الجانبية - للجوال
+// ==========================================
+
+// فتح وإغلاق القائمة
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+    }
+    if (overlay) {
+        overlay.classList.toggle('active');
+    }
+}
+
+// إغلاق القائمة عند النقر على الخلفية المظلمة
+function closeSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    
+    if (sidebar) {
+        sidebar.classList.remove('open');
+    }
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+}
+
+// إغلاق القائمة عند النقر على رابط داخلها
+document.addEventListener('DOMContentLoaded', function() {
+    var navLinks = document.querySelectorAll('.sidebar .nav-link');
+    navLinks.forEach(function(link) {
+        link.addEventListener('click', function() {
+            closeSidebar();
+        });
+    });
+});
+
+// إغلاق القائمة عند الضغط على زر الرجوع في الجوال
+window.addEventListener('popstate', function() {
+    closeSidebar();
+});
