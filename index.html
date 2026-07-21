@@ -1,25 +1,443 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="dark">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CyberSOC Dashboard - لوحة التحكم</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSOC - لوحة التحكم</title>
     
-    <link rel="stylesheet" href="assets/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
-    <script>
-    // ==========================================
-    // التحقق من تسجيل الدخول
-    // ==========================================
-    (function checkAuth() {
-        var loggedIn = sessionStorage.getItem('loggedIn');
-        if (!loggedIn || loggedIn !== 'true') {
-            window.location.href = 'login.html';
+    <style>
+        /* ==========================================
+           التنسيقات المباشرة (داخل الصفحة)
+           ========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    })();
-    </script>
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #0a0e1a;
+            color: #f1f5f9;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* ===== السايدبار ===== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 260px;
+            height: 100vh;
+            background: #111827;
+            padding: 20px;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            border-left: 1px solid #1e293b;
+        }
+        
+        .sidebar.open {
+            right: 0;
+        }
+        
+        .sidebar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .sidebar .logo-icon {
+            font-size: 28px;
+        }
+        
+        .sidebar .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00f0ff;
+        }
+        
+        .sidebar .nav-menu {
+            list-style: none;
+        }
+        
+        .sidebar .nav-item {
+            margin-bottom: 2px;
+        }
+        
+        .sidebar .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        
+        .sidebar .nav-link:hover {
+            background: rgba(0, 240, 255, 0.08);
+            color: #f1f5f9;
+        }
+        
+        .sidebar .nav-link.active {
+            background: rgba(0, 240, 255, 0.12);
+            color: #00f0ff;
+        }
+        
+        .sidebar .nav-badge {
+            margin-left: auto;
+            background: #ef4444;
+            color: white;
+            font-size: 9px;
+            padding: 1px 7px;
+            border-radius: 10px;
+        }
+        
+        .sidebar-footer {
+            margin-top: 30px;
+            padding-top: 12px;
+            border-top: 1px solid #1e293b;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            font-size: 20px;
+        }
+        
+        .user-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .user-role {
+            font-size: 11px;
+            color: #64748b;
+        }
+        
+        /* ===== الخلفية المظلمة ===== */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        /* ===== المحتوى الرئيسي ===== */
+        .main-content {
+            padding: 16px;
+            min-height: 100vh;
+        }
+        
+        /* ===== الشريط العلوي ===== */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: #1e293b;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: #f1f5f9;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        .menu-toggle:hover {
+            color: #00f0ff;
+        }
+        
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        #clock {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #334155;
+            color: #f1f5f9;
+        }
+        
+        .btn-outline:hover {
+            border-color: #00f0ff;
+            color: #00f0ff;
+        }
+        
+        .btn-sm {
+            padding: 3px 10px;
+            font-size: 11px;
+        }
+        
+        .lang-toggle {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #334155;
+            color: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.3s;
+        }
+        
+        .lang-toggle:hover {
+            background: rgba(0, 240, 255, 0.08);
+            border-color: #00f0ff;
+        }
+        
+        /* ===== البطاقات ===== */
+        .glass-card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #334155;
+            transition: 0.3s;
+        }
+        
+        .glass-card:hover {
+            border-color: #00f0ff;
+            transform: translateY(-2px);
+        }
+        
+        .grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        
+        .stat-card {
+            min-height: 70px;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00f0ff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .stat-change {
+            font-size: 10px;
+            padding: 1px 8px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        .stat-change.positive {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
+        }
+        
+        .stat-change.negative {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.15);
+        }
+        
+        .stat-change.neutral {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.15);
+        }
+        
+        .flex-between {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        /* ===== الجداول ===== */
+        .table-container {
+            overflow-x: auto;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .table th {
+            padding: 8px 12px;
+            text-align: right;
+            color: #94a3b8;
+            border-bottom: 1px solid #334155;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        
+        .table td {
+            padding: 6px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(0, 240, 255, 0.03);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+        
+        .badge-critical { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge-high { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .badge-medium { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-low { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-active { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge-investigating { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .badge-resolved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        
+        /* ===== شاشة التحميل ===== */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: #0a0e1a;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s;
+        }
+        
+        #loading-screen.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 240, 255, 0.1);
+            border-top-color: #00f0ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 12px;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        
+        /* ===== تذييل ===== */
+        footer {
+            margin-top: 20px;
+            padding: 12px;
+            text-align: center;
+            color: #64748b;
+            font-size: 11px;
+            border-top: 1px solid #1e293b;
+        }
+        
+        /* ===== الاستجابة ===== */
+        @media (max-width: 768px) {
+            .grid-4 { grid-template-columns: 1fr 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .stat-number { font-size: 20px; }
+            .stat-card { min-height: 60px; }
+            .topbar { padding: 8px 12px; }
+            .page-title { font-size: 15px; }
+            .glass-card { padding: 12px; }
+            .main-content { padding: 10px; }
+            .table th, .table td { padding: 4px 8px; font-size: 10px; }
+            .badge { font-size: 8px; padding: 1px 6px; }
+        }
+        
+        @media (max-width: 576px) {
+            .grid-4 { grid-template-columns: 1fr; }
+            .stat-number { font-size: 18px; }
+            .topbar-right { gap: 4px; }
+            .lang-toggle { font-size: 10px; padding: 2px 8px; }
+            #clock { font-size: 11px; }
+            .btn { font-size: 10px; padding: 2px 8px; }
+        }
+        
+        /* ===== الثيم الفاتح ===== */
+        [data-theme="light"] body {
+            background: #f0f4ff;
+            color: #0f172a;
+        }
+        [data-theme="light"] .sidebar { background: #ffffff; }
+        [data-theme="light"] .glass-card { background: #ffffff; border-color: #e2e8f0; }
+        [data-theme="light"] .topbar { background: #ffffff; }
+        [data-theme="light"] .table-container { background: #ffffff; }
+        [data-theme="light"] .stat-number { color: #4f46e5; }
+    </style>
 </head>
 <body>
 
@@ -32,7 +450,7 @@
 </div>
 
 <!-- ========================================== -->
-<!-- الشريط الجانبي (Sidebar) -->
+<!-- السايدبار (القائمة الجانبية) -->
 <!-- ========================================== -->
 <aside class="sidebar" id="sidebar">
     <div class="logo">
@@ -52,14 +470,14 @@
                 <a href="threats.html" class="nav-link">
                     <span class="nav-icon">⚠️</span>
                     <span class="nav-text">التهديدات</span>
-                    <span class="nav-badge" id="threat-badge">12</span>
+                    <span class="nav-badge">12</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="incidents.html" class="nav-link">
                     <span class="nav-icon">🚨</span>
                     <span class="nav-text">الحوادث</span>
-                    <span class="nav-badge" id="incident-badge">5</span>
+                    <span class="nav-badge">5</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -81,14 +499,14 @@
         <div class="user-info">
             <span class="user-avatar">👤</span>
             <div>
-                <div class="user-name" id="userName">مدير النظام</div>
-                <div class="user-role" id="userRole">Admin</div>
+                <div class="user-name">مدير النظام</div>
+                <div class="user-role">Admin</div>
             </div>
         </div>
     </div>
 </aside>
 
-<!-- الخلفية المظلمة للقائمة (للجوال) -->
+<!-- الخلفية المظلمة -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <!-- ========================================== -->
@@ -99,108 +517,76 @@
     <!-- الشريط العلوي -->
     <header class="topbar">
         <div class="topbar-left">
-            <button class="menu-toggle" onclick="toggleSidebar()" aria-label="تبديل القائمة">
-                ☰
-            </button>
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
             <h1 class="page-title">لوحة التحكم</h1>
         </div>
-        
         <div class="topbar-right">
             <span id="clock">--:--:--</span>
             <button class="lang-toggle" onclick="toggleLanguage()">🇬🇧 EN</button>
             <button class="btn btn-outline btn-sm" onclick="logout()">🚪 خروج</button>
-            
-            <div class="notification-badge">
-                <span style="font-size:18px;">🔔</span>
-                <span class="badge-count" id="notif-count">3</span>
-                <div class="notification-dropdown" id="notif-dropdown">
-                    <div class="notification-item">
-                        <div class="notif-title">🚨 تهديد حرج جديد</div>
-                        <div class="notif-time">منذ 5 دقائق</div>
-                    </div>
-                    <div class="notification-item">
-                        <div class="notif-title">📋 حادث معين لك</div>
-                        <div class="notif-time">منذ 20 دقيقة</div>
-                    </div>
-                    <div class="notification-item">
-                        <div class="notif-title">✅ تحديث حالة الحادث</div>
-                        <div class="notif-time">منذ ساعة</div>
-                    </div>
-                </div>
-            </div>
         </div>
     </header>
     
-    <!-- ========================================== -->
-    <!-- بطاقات الإحصائيات -->
-    <!-- ========================================== -->
-    <section class="grid grid-4" style="margin-bottom: 14px;">
-        <div class="glass-card glass-card-glow stat-card">
+    <!-- الإحصائيات -->
+    <section class="grid grid-4">
+        <div class="glass-card stat-card">
             <div class="flex-between">
-                <span class="stat-icon">🛡️</span>
+                <span style="font-size:20px;">🛡️</span>
                 <span class="stat-change positive">↑ 12%</span>
             </div>
-            <div class="stat-number" id="total-threats">0</div>
+            <div class="stat-number" id="total-threats">55</div>
             <div class="stat-label">إجمالي التهديدات</div>
         </div>
-        
-        <div class="glass-card glass-card-glow stat-card">
+        <div class="glass-card stat-card">
             <div class="flex-between">
-                <span class="stat-icon">🔥</span>
+                <span style="font-size:20px;">🔥</span>
                 <span class="stat-change negative">↑ 8%</span>
             </div>
-            <div class="stat-number" id="critical-threats" style="color: #ef4444;">0</div>
+            <div class="stat-number" style="color:#ef4444;" id="critical-threats">8</div>
             <div class="stat-label">تهديدات حرجة</div>
         </div>
-        
-        <div class="glass-card glass-card-glow stat-card">
+        <div class="glass-card stat-card">
             <div class="flex-between">
-                <span class="stat-icon">🚨</span>
+                <span style="font-size:20px;">🚨</span>
                 <span class="stat-change neutral">↑ 3%</span>
             </div>
-            <div class="stat-number" id="total-incidents" style="color: #f59e0b;">0</div>
+            <div class="stat-number" style="color:#f59e0b;" id="total-incidents">23</div>
             <div class="stat-label">إجمالي الحوادث</div>
         </div>
-        
-        <div class="glass-card glass-card-glow stat-card">
+        <div class="glass-card stat-card">
             <div class="flex-between">
-                <span class="stat-icon">⏳</span>
+                <span style="font-size:20px;">⏳</span>
                 <span class="stat-change positive">↓ 5%</span>
             </div>
-            <div class="stat-number" id="active-incidents" style="color: #3b82f6;">0</div>
+            <div class="stat-number" style="color:#3b82f6;" id="active-incidents">5</div>
             <div class="stat-label">حوادث نشطة</div>
         </div>
     </section>
     
-    <!-- ========================================== -->
     <!-- الرسوم البيانية -->
-    <!-- ========================================== -->
-    <section class="grid grid-2" style="margin-bottom: 14px;">
+    <section class="grid grid-2">
         <div class="glass-card">
-            <h3 style="margin-bottom: 8px; font-size: 14px;">📈 تحليل الهجمات</h3>
-            <div class="chart-container">
-                <canvas id="attacksChart"></canvas>
+            <h3 style="font-size:14px; margin-bottom:8px;">📈 تحليل الهجمات</h3>
+            <div style="height:180px; width:100%; background:rgba(255,255,255,0.02); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:13px;">
+                📊 الرسم البياني هنا
             </div>
         </div>
-        
         <div class="glass-card">
-            <h3 style="margin-bottom: 8px; font-size: 14px;">🎯 توزيع التهديدات</h3>
-            <div class="chart-container">
-                <canvas id="severityChart"></canvas>
+            <h3 style="font-size:14px; margin-bottom:8px;">🎯 توزيع التهديدات</h3>
+            <div style="height:180px; width:100%; background:rgba(255,255,255,0.02); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:13px;">
+                📊 الرسم البياني هنا
             </div>
         </div>
     </section>
     
-    <!-- ========================================== -->
-    <!-- أحدث التهديدات -->
-    <!-- ========================================== -->
-    <section class="glass-card" style="margin-bottom: 14px;">
-        <div class="flex-between" style="margin-bottom: 8px;">
-            <h3 style="font-size: 14px;">⚠️ أحدث التهديدات</h3>
-            <a href="threats.html" style="color: #00f0ff; text-decoration: none; font-size: 12px;">عرض الكل →</a>
+    <!-- التهديدات -->
+    <section class="glass-card" style="margin-bottom:12px;">
+        <div class="flex-between" style="margin-bottom:8px;">
+            <h3 style="font-size:14px;">⚠️ أحدث التهديدات</h3>
+            <a href="threats.html" style="color:#00f0ff; text-decoration:none; font-size:12px;">عرض الكل →</a>
         </div>
         <div class="table-container">
-            <table class="table" id="threats-table">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>الاسم</th>
@@ -212,42 +598,81 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- يتم ملؤها بواسطة JS -->
+                    <tr>
+                        <td>هجوم DDoS متقدم</td>
+                        <td>DDoS</td>
+                        <td><span class="badge badge-critical">حرجة</span></td>
+                        <td>192.168.1.100</td>
+                        <td><span class="badge badge-active">نشط</span></td>
+                        <td>2026-01-21 14:30</td>
+                    </tr>
+                    <tr>
+                        <td>محاولة حقن SQL</td>
+                        <td>SQL Injection</td>
+                        <td><span class="badge badge-high">عالية</span></td>
+                        <td>45.33.22.11</td>
+                        <td><span class="badge badge-investigating">قيد التحقيق</span></td>
+                        <td>2026-01-21 13:15</td>
+                    </tr>
+                    <tr>
+                        <td>برمجية فدية WannaCry</td>
+                        <td>Ransomware</td>
+                        <td><span class="badge badge-critical">حرجة</span></td>
+                        <td>192.168.5.50</td>
+                        <td><span class="badge badge-active">نشط</span></td>
+                        <td>2026-01-21 12:00</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </section>
     
-    <!-- ========================================== -->
-    <!-- الحوادث الأخيرة -->
-    <!-- ========================================== -->
+    <!-- الحوادث -->
     <section class="glass-card">
-        <div class="flex-between" style="margin-bottom: 8px;">
-            <h3 style="font-size: 14px;">🚨 آخر الحوادث</h3>
-            <a href="incidents.html" style="color: #00f0ff; text-decoration: none; font-size: 12px;">عرض الكل →</a>
+        <div class="flex-between" style="margin-bottom:8px;">
+            <h3 style="font-size:14px;">🚨 آخر الحوادث</h3>
+            <a href="incidents.html" style="color:#00f0ff; text-decoration:none; font-size:12px;">عرض الكل →</a>
         </div>
         <div class="table-container">
-            <table class="table" id="incidents-table">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>رقم الحادث</th>
                         <th>العنوان</th>
                         <th>الأولوية</th>
                         <th>الحالة</th>
-                        <th>تاريخ الإنشاء</th>
+                        <th>التوقيت</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- يتم ملؤها بواسطة JS -->
+                    <tr>
+                        <td>INC-2026-001</td>
+                        <td>هجوم DDoS على خوادم الويب</td>
+                        <td><span class="badge badge-critical">حرجة</span></td>
+                        <td><span class="badge badge-active">جديد</span></td>
+                        <td>2026-01-21 14:30</td>
+                    </tr>
+                    <tr>
+                        <td>INC-2026-002</td>
+                        <td>محاولة حقن SQL في قاعدة البيانات</td>
+                        <td><span class="badge badge-high">عالية</span></td>
+                        <td><span class="badge badge-investigating">قيد التحقيق</span></td>
+                        <td>2026-01-21 13:15</td>
+                    </tr>
+                    <tr>
+                        <td>INC-2026-003</td>
+                        <td>انتشار برمجية فدية على الشبكة</td>
+                        <td><span class="badge badge-critical">حرجة</span></td>
+                        <td><span class="badge badge-active">جديد</span></td>
+                        <td>2026-01-21 12:00</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </section>
     
-    <!-- ========================================== -->
     <!-- تذييل -->
-    <!-- ========================================== -->
-    <footer style="margin-top: 24px; padding: 10px; text-align: center; color: #64748b; font-size: 12px;">
+    <footer>
         <p>🛡️ CyberSOC Dashboard v1.0.0 | جميع الحقوق محفوظة © 2026</p>
     </footer>
 </main>
@@ -255,8 +680,6 @@
 <!-- ========================================== -->
 <!-- JavaScript -->
 <!-- ========================================== -->
-<script src="assets/js/main.js"></script>
-
 <script>
 // ==========================================
 // الساعة
@@ -265,7 +688,7 @@ function updateClock() {
     var clock = document.getElementById('clock');
     if (!clock) return;
     var now = new Date();
-    var time = now.toLocaleTimeString('ar-SA', { 
+    var time = now.toLocaleTimeString('ar-SA', {
         hour12: false,
         hour: '2-digit',
         minute: '2-digit',
@@ -277,36 +700,17 @@ setInterval(updateClock, 1000);
 updateClock();
 
 // ==========================================
-// تبديل اللغة
+// شاشة التحميل
 // ==========================================
-function toggleLanguage() {
-    var current = document.documentElement.lang;
-    var next = current === 'ar' ? 'en' : 'ar';
-    document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = next;
-    localStorage.setItem('soc_language', next);
-    
-    var btn = document.querySelector('.lang-toggle');
-    if (btn) {
-        btn.textContent = next === 'ar' ? '🇬🇧 EN' : '🇸🇦 عربي';
-    }
-}
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        var loading = document.getElementById('loading-screen');
+        if (loading) loading.classList.add('hide');
+    }, 500);
+});
 
 // ==========================================
-// تسجيل الخروج
-// ==========================================
-function logout() {
-    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        sessionStorage.removeItem('loggedIn');
-        sessionStorage.removeItem('username');
-        sessionStorage.removeItem('userRole');
-        sessionStorage.removeItem('userName');
-        window.location.href = 'login.html';
-    }
-}
-
-// ==========================================
-// القائمة الجانبية (Sidebar)
+// السايدبار
 // ==========================================
 function toggleSidebar() {
     var sidebar = document.getElementById('sidebar');
@@ -317,17 +721,6 @@ function toggleSidebar() {
     }
     if (overlay) {
         overlay.classList.toggle('active');
-    }
-    
-    // منع تمرير الصفحة عند فتح القائمة
-    if (sidebar && sidebar.classList.contains('open')) {
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.width = '100%';
-    } else {
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.width = '';
     }
 }
 
@@ -341,195 +734,44 @@ function closeSidebar() {
     if (overlay) {
         overlay.classList.remove('active');
     }
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.width = '';
 }
 
 // ==========================================
-// الرسوم البيانية
+// اللغة
+// ==========================================
+function toggleLanguage() {
+    var current = document.documentElement.lang;
+    var next = current === 'ar' ? 'en' : 'ar';
+    document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = next;
+    
+    var btn = document.querySelector('.lang-toggle');
+    if (btn) {
+        btn.textContent = next === 'ar' ? '🇬🇧 EN' : '🇸🇦 عربي';
+    }
+}
+
+// ==========================================
+// تسجيل الخروج
+// ==========================================
+function logout() {
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        sessionStorage.clear();
+        window.location.href = 'login.html';
+    }
+}
+
+// ==========================================
+// إغلاق السايدبار عند النقر على الروابط
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
-    // إخفاء شاشة التحميل
-    var loading = document.getElementById('loading-screen');
-    if (loading) {
-        setTimeout(function() {
-            loading.classList.add('hide');
-        }, 500);
-    }
-    
-    // اسم المستخدم
-    var userName = sessionStorage.getItem('userName') || 'مدير النظام';
-    var userRole = sessionStorage.getItem('userRole') || 'Admin';
-    var nameEl = document.getElementById('userName');
-    var roleEl = document.getElementById('userRole');
-    if (nameEl) nameEl.textContent = userName;
-    if (roleEl) roleEl.textContent = userRole;
-    
-    // تحديث الإحصائيات
-    document.getElementById('total-threats').textContent = '55';
-    document.getElementById('critical-threats').textContent = '8';
-    document.getElementById('total-incidents').textContent = '23';
-    document.getElementById('active-incidents').textContent = '5';
-    
-    // تحديث جداول التهديدات والحوادث
-    updateThreatsTable();
-    updateIncidentsTable();
-    
-    // إغلاق القائمة عند النقر على الروابط
-    var navLinks = document.querySelectorAll('.sidebar .nav-link');
-    navLinks.forEach(function(link) {
-        link.addEventListener('click', function() {
-            closeSidebar();
-        });
-    });
-    
-    // إغلاق القائمة عند تغيير حجم الشاشة
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 992) {
-            closeSidebar();
-        }
+    var links = document.querySelectorAll('.sidebar .nav-link');
+    links.forEach(function(link) {
+        link.addEventListener('click', closeSidebar);
     });
 });
 
-// ==========================================
-// تحديث جدول التهديدات
-// ==========================================
-function updateThreatsTable() {
-    var tbody = document.querySelector('#threats-table tbody');
-    if (!tbody) return;
-    
-    var data = [
-        { name: 'هجوم DDoS متقدم', type: 'DDoS', severity: 'critical', source: '192.168.1.100', status: 'active', time: '2026-01-21 14:30' },
-        { name: 'محاولة حقن SQL', type: 'SQL Injection', severity: 'high', source: '45.33.22.11', status: 'investigating', time: '2026-01-21 13:15' },
-        { name: 'برمجية فدية WannaCry', type: 'Ransomware', severity: 'critical', source: '192.168.5.50', status: 'active', time: '2026-01-21 12:00' },
-        { name: 'حملة تصيد احتيالي', type: 'Phishing', severity: 'medium', source: '203.0.113.45', status: 'investigating', time: '2026-01-21 11:20' },
-        { name: 'محاولات Brute Force SSH', type: 'Brute Force', severity: 'high', source: '198.51.100.67', status: 'resolved', time: '2026-01-21 10:45' }
-    ];
-    
-    var html = '';
-    data.forEach(function(t) {
-        html += '<tr>' +
-            '<td>' + t.name + '</td>' +
-            '<td>' + t.type + '</td>' +
-            '<td><span class="badge badge-' + t.severity + '">' + t.severity + '</span></td>' +
-            '<td>' + t.source + '</td>' +
-            '<td><span class="badge badge-' + t.status + '">' + t.status + '</span></td>' +
-            '<td>' + t.time + '</td>' +
-        '</tr>';
-    });
-    tbody.innerHTML = html;
-}
-
-// ==========================================
-// تحديث جدول الحوادث
-// ==========================================
-function updateIncidentsTable() {
-    var tbody = document.querySelector('#incidents-table tbody');
-    if (!tbody) return;
-    
-    var data = [
-        { id: 'INC-2026-001', title: 'هجوم DDoS على خوادم الويب', priority: 'critical', status: 'new', time: '2026-01-21 14:30' },
-        { id: 'INC-2026-002', title: 'محاولة حقن SQL في قاعدة البيانات', priority: 'high', status: 'investigating', time: '2026-01-21 13:15' },
-        { id: 'INC-2026-003', title: 'انتشار برمجية فدية على الشبكة', priority: 'critical', status: 'new', time: '2026-01-21 12:00' },
-        { id: 'INC-2026-004', title: 'محاولات اختراق SSH متكررة', priority: 'high', status: 'resolved', time: '2026-01-21 10:45' },
-        { id: 'INC-2026-005', title: 'ثغرة في تطبيق CRM', priority: 'medium', status: 'investigating', time: '2026-01-21 09:30' }
-    ];
-    
-    var html = '';
-    data.forEach(function(t) {
-        html += '<tr>' +
-            '<td>' + t.id + '</td>' +
-            '<td>' + t.title + '</td>' +
-            '<td><span class="badge badge-' + t.priority + '">' + t.priority + '</span></td>' +
-            '<td><span class="badge badge-' + t.status + '">' + t.status + '</span></td>' +
-            '<td>' + t.time + '</td>' +
-        '</tr>';
-    });
-    tbody.innerHTML = html;
-}
-
-// ==========================================
-// الرسوم البيانية (Chart.js)
-// ==========================================
-document.addEventListener('DOMContentLoaded', function() {
-    // رسم بياني للهجمات
-    var attacksCtx = document.getElementById('attacksChart')?.getContext('2d');
-    if (attacksCtx) {
-        new Chart(attacksCtx, {
-            type: 'line',
-            data: {
-                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
-                datasets: [{
-                    label: 'الهجمات',
-                    data: [12, 8, 45, 67, 34, 56, 23],
-                    borderColor: '#00f0ff',
-                    backgroundColor: 'rgba(0, 240, 255, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#00f0ff',
-                    pointBorderColor: '#00f0ff',
-                    pointRadius: 3,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: { color: '#94a3b8', font: { size: 11 } }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#94a3b8', font: { size: 10 } }
-                    },
-                    x: {
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#94a3b8', font: { size: 10 } }
-                    }
-                }
-            }
-        });
-    }
-    
-    // رسم بياني للخطورة
-    var severityCtx = document.getElementById('severityChart')?.getContext('2d');
-    if (severityCtx) {
-        new Chart(severityCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['حرجة', 'عالية', 'متوسطة', 'منخفضة'],
-                datasets: [{
-                    data: [8, 15, 22, 10],
-                    backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'],
-                    borderColor: '#1e293b',
-                    borderWidth: 2,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: '#94a3b8', font: { size: 11 }, padding: 10 }
-                    }
-                }
-            }
-        });
-    }
-});
-
-// جعل الدوال متاحة عالمياً
-window.toggleSidebar = toggleSidebar;
-window.closeSidebar = closeSidebar;
-window.toggleLanguage = toggleLanguage;
-window.logout = logout;
-
-console.log('✅ CyberSOC Dashboard loaded successfully!');
+console.log('✅ CyberSOC Dashboard ready!');
 </script>
 
 </body>
