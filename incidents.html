@@ -7,10 +7,15 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
     
     <style>
-        /* نفس التنسيقات السابقة */
+        /* ==========================================
+           التنسيقات الأساسية
+           ========================================== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0a0e1a; color: #f1f5f9; min-height: 100vh; overflow-x: hidden; }
         
+        /* ==========================================
+           السايدبار
+           ========================================== */
         .sidebar {
             position: fixed; top: 0; right: 0; width: 240px; height: 100vh;
             background: #111827; padding: 20px 16px; overflow-y: auto;
@@ -32,8 +37,8 @@
             border-radius: 8px; color: #94a3b8; text-decoration: none;
             transition: 0.3s; font-size: 14px;
         }
-        .sidebar .nav-link:hover { background: rgba(0, 240, 255, 0.08); color: #f1f5f9; }
-        .sidebar .nav-link.active { background: rgba(0, 240, 255, 0.12); color: #00f0ff; }
+        .sidebar .nav-link:hover { background: rgba(0,240,255,0.08); color: #f1f5f9; }
+        .sidebar .nav-link.active { background: rgba(0,240,255,0.12); color: #00f0ff; }
         .sidebar .nav-icon { font-size: 16px; width: 20px; text-align: center; }
         .sidebar .nav-badge { margin-left: auto; background: #ef4444; color: white; font-size: 9px; padding: 1px 7px; border-radius: 10px; }
         .sidebar-footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid #1e293b; }
@@ -100,11 +105,125 @@
         .badge-resolved { background: rgba(16,185,129,0.2); color: #10b981; }
         .badge-new { background: rgba(236,72,153,0.2); color: #ec4899; }
         
-        .form-group { margin-bottom: 10px; }
-        .form-group label { display: block; color: #94a3b8; font-size: 11px; margin-bottom: 3px; }
-        .form-control { width: 100%; padding: 8px 12px; background: rgba(10,14,26,0.6); border: 1px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 12px; }
-        .form-control:focus { outline: none; border-color: #00f0ff; }
+        /* ==========================================
+           النماذج - محسنة
+           ========================================== */
+        .form-group { margin-bottom: 14px; }
+        .form-group label { 
+            display: block; 
+            color: #94a3b8; 
+            font-size: 12px; 
+            margin-bottom: 4px; 
+            font-weight: 500;
+        }
+        .form-group label .required {
+            color: #ef4444;
+            margin-right: 2px;
+        }
+        .form-control { 
+            width: 100%; 
+            padding: 10px 14px; 
+            background: rgba(10,14,26,0.6); 
+            border: 1px solid #334155; 
+            border-radius: 8px; 
+            color: #f1f5f9; 
+            font-size: 13px; 
+            transition: 0.3s;
+        }
+        .form-control:focus { 
+            outline: none; 
+            border-color: #00f0ff; 
+            box-shadow: 0 0 0 3px rgba(0,240,255,0.05);
+        }
+        .form-control::placeholder { color: #64748b; }
+        select.form-control { appearance: none; cursor: pointer; }
+        textarea.form-control { resize: vertical; min-height: 80px; }
         
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        @media (max-width: 576px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* ==========================================
+           النافذة المنبثقة (Modal)
+           ========================================== */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.7); 
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2000; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px;
+        }
+        .modal.show { display: flex; }
+        .modal-content { 
+            background: #1e293b; 
+            border-radius: 16px; 
+            padding: 28px 32px; 
+            max-width: 580px; 
+            width: 100%; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            position: relative; 
+            border: 1px solid #334155;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .modal-content::-webkit-scrollbar { width: 4px; }
+        .modal-content::-webkit-scrollbar-thumb { background: #00f0ff; border-radius: 10px; }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #334155;
+        }
+        .modal-header h3 { 
+            font-size: 18px; 
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-close { 
+            background: none; 
+            border: none; 
+            color: #94a3b8; 
+            font-size: 24px; 
+            cursor: pointer; 
+            transition: 0.3s;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .modal-close:hover { 
+            color: #ef4444; 
+            background: rgba(239,68,68,0.1);
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #334155;
+        }
+        
+        /* ==========================================
+           شاشة التحميل
+           ========================================== */
         #loading-screen { position: fixed; inset: 0; background: #0a0e1a; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
         #loading-screen.hide { opacity: 0; pointer-events: none; }
         .loading-spinner { width: 40px; height: 40px; border: 3px solid rgba(0,240,255,0.1); border-top-color: #00f0ff; border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -113,11 +232,9 @@
         
         footer { margin-top: 20px; padding: 12px; text-align: center; color: #64748b; font-size: 11px; border-top: 1px solid #1e293b; }
         
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 2000; align-items: center; justify-content: center; }
-        .modal.show { display: flex; }
-        .modal-content { background: #1e293b; border-radius: 12px; padding: 24px; max-width: 450px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid #334155; }
-        .modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #f1f5f9; font-size: 22px; cursor: pointer; }
-        
+        /* ==========================================
+           الاستجابة
+           ========================================== */
         @media (max-width: 768px) {
             .grid-4 { grid-template-columns: 1fr 1fr; }
             .grid-2 { grid-template-columns: 1fr; }
@@ -128,6 +245,7 @@
             .glass-card { padding: 12px; }
             .table th, .table td { padding: 4px 8px; font-size: 10px; }
             .badge { font-size: 8px; padding: 1px 6px; }
+            .modal-content { padding: 20px; }
         }
         @media (max-width: 576px) {
             .grid-4 { grid-template-columns: 1fr; }
@@ -137,8 +255,12 @@
             #clock { font-size: 11px; }
             .btn { font-size: 10px; padding: 2px 8px; }
             .modal-content { padding: 16px; }
+            .modal-header h3 { font-size: 16px; }
         }
         
+        /* ==========================================
+           الثيم الفاتح
+           ========================================== */
         [data-theme="light"] body { background: #f0f4ff; color: #0f172a; }
         [data-theme="light"] .sidebar { background: #ffffff; border-left-color: #e2e8f0; }
         [data-theme="light"] .glass-card { background: #ffffff; border-color: #e2e8f0; }
@@ -149,6 +271,8 @@
         [data-theme="light"] .lang-toggle { border-color: #e2e8f0; color: #0f172a; }
         [data-theme="light"] .form-control { background: #f8fafc; color: #0f172a; border-color: #e2e8f0; }
         [data-theme="light"] .modal-content { background: #ffffff; border-color: #e2e8f0; }
+        [data-theme="light"] .modal-header { border-bottom-color: #e2e8f0; }
+        [data-theme="light"] .modal-footer { border-top-color: #e2e8f0; }
     </style>
 </head>
 <body>
@@ -233,6 +357,7 @@
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button class="btn btn-primary btn-sm" onclick="showAddIncident()">➕ إضافة حادث</button>
             <button class="btn btn-outline btn-sm" onclick="refreshIncidents()">🔄 تحديث</button>
+            <button class="btn btn-outline btn-sm" onclick="exportIncidents()">📥 تصدير</button>
         </div>
         <div style="display:flex; gap:4px; flex-wrap:wrap;">
             <button class="btn btn-sm btn-outline" onclick="filterIncidents('all')">الكل</button>
@@ -253,47 +378,13 @@
                         <th>العنوان</th>
                         <th>الأولوية</th>
                         <th>الحالة</th>
+                        <th>المسؤول</th>
                         <th>التوقيت</th>
                         <th>الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="incidentsBody">
-                    <tr>
-                        <td>INC-2026-001</td>
-                        <td>هجوم DDoS على خوادم الويب</td>
-                        <td><span class="badge badge-critical">حرجة</span></td>
-                        <td><span class="badge badge-new">جديد</span></td>
-                        <td>2026-01-21 14:30</td>
-                        <td>
-                            <button class="btn btn-sm btn-success" onclick="updateStatus('INC-2026-001','resolved')">✅</button>
-                            <button class="btn btn-sm btn-warning" onclick="updateStatus('INC-2026-001','investigating')">🔍</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteIncident('INC-2026-001')">🗑️</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>INC-2026-002</td>
-                        <td>محاولة حقن SQL في قاعدة البيانات</td>
-                        <td><span class="badge badge-high">عالية</span></td>
-                        <td><span class="badge badge-investigating">قيد التحقيق</span></td>
-                        <td>2026-01-21 13:15</td>
-                        <td>
-                            <button class="btn btn-sm btn-success" onclick="updateStatus('INC-2026-002','resolved')">✅</button>
-                            <button class="btn btn-sm btn-warning" onclick="updateStatus('INC-2026-002','investigating')">🔍</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteIncident('INC-2026-002')">🗑️</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>INC-2026-003</td>
-                        <td>انتشار برمجية فدية على الشبكة</td>
-                        <td><span class="badge badge-critical">حرجة</span></td>
-                        <td><span class="badge badge-new">جديد</span></td>
-                        <td>2026-01-21 12:00</td>
-                        <td>
-                            <button class="btn btn-sm btn-success" onclick="updateStatus('INC-2026-003','resolved')">✅</button>
-                            <button class="btn btn-sm btn-warning" onclick="updateStatus('INC-2026-003','investigating')">🔍</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteIncident('INC-2026-003')">🗑️</button>
-                        </td>
-                    </tr>
+                    <!-- يتم ملؤها بواسطة JS -->
                 </tbody>
             </table>
         </div>
@@ -305,27 +396,135 @@
 </main>
 
 <!-- ========================================== -->
-<!-- نافذة إضافة حادث -->
+<!-- نافذة إضافة حادث - جميع الحقول -->
 <!-- ========================================== -->
 <div class="modal" id="addIncidentModal">
     <div class="modal-content">
-        <button class="modal-close" onclick="closeAddIncident()">✕</button>
-        <h3 style="margin-bottom:12px;">➕ إضافة حادث جديد</h3>
+        <div class="modal-header">
+            <h3>➕ إضافة حادث جديد</h3>
+            <button class="modal-close" onclick="closeAddIncident()">✕</button>
+        </div>
+        
         <form id="addIncidentForm" onsubmit="addIncident(event)">
+            <!-- العنوان -->
             <div class="form-group">
-                <label>عنوان الحادث</label>
+                <label>عنوان الحادث <span class="required">*</span></label>
                 <input type="text" id="incidentTitle" class="form-control" placeholder="أدخل عنوان الحادث" required>
             </div>
+            
+            <!-- الوصف -->
             <div class="form-group">
-                <label>الأولوية</label>
-                <select id="incidentPriority" class="form-control">
-                    <option value="critical">حرجة</option>
-                    <option value="high">عالية</option>
-                    <option value="medium" selected>متوسطة</option>
-                    <option value="low">منخفضة</option>
-                </select>
+                <label>الوصف <span class="required">*</span></label>
+                <textarea id="incidentDescription" class="form-control" rows="3" placeholder="وصف تفصيلي للحادث" required></textarea>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;">إضافة الحادث</button>
+            
+            <!-- الصف الأول: الأولوية + الحالة -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الأولوية <span class="required">*</span></label>
+                    <select id="incidentPriority" class="form-control" required>
+                        <option value="critical">🔴 حرجة</option>
+                        <option value="high">🟠 عالية</option>
+                        <option value="medium" selected>🟡 متوسطة</option>
+                        <option value="low">🟢 منخفضة</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>الحالة <span class="required">*</span></label>
+                    <select id="incidentStatus" class="form-control" required>
+                        <option value="new">🆕 جديد</option>
+                        <option value="investigating">🔍 قيد التحقيق</option>
+                        <option value="in_progress">⚙️ قيد المعالجة</option>
+                        <option value="resolved">✅ محلول</option>
+                        <option value="closed">🔒 مغلق</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- الصف الثاني: تعيين إلى + نوع الحادث -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>تعيين إلى</label>
+                    <select id="incidentAssign" class="form-control">
+                        <option value="">غير معين</option>
+                        <option value="أحمد محمد">أحمد محمد</option>
+                        <option value="سارة الخالدي">سارة الخالدي</option>
+                        <option value="محمد العتيبي">محمد العتيبي</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>نوع الحادث</label>
+                    <select id="incidentType" class="form-control">
+                        <option value="DDoS">DDoS</option>
+                        <option value="Malware">برمجية خبيثة</option>
+                        <option value="Phishing">تصيد احتيالي</option>
+                        <option value="Ransomware">برمجية فدية</option>
+                        <option value="SQL Injection">حقن SQL</option>
+                        <option value="Brute Force">هجوم تخمين</option>
+                        <option value="Insider Threat">تهديد داخلي</option>
+                        <option value="Other">أخرى</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- الصف الثالث: المصدر + الهدف -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>المصدر (IP)</label>
+                    <input type="text" id="incidentSource" class="form-control" placeholder="مثل: 192.168.1.100">
+                </div>
+                <div class="form-group">
+                    <label>الهدف (IP)</label>
+                    <input type="text" id="incidentTarget" class="form-control" placeholder="مثل: 10.0.0.5">
+                </div>
+            </div>
+            
+            <!-- الصف الرابع: التاريخ + الوقت -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>تاريخ الاكتشاف</label>
+                    <input type="date" id="incidentDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>وقت الاكتشاف</label>
+                    <input type="time" id="incidentTime" class="form-control">
+                </div>
+            </div>
+            
+            <!-- الصف الخامس: التأثير + الأنظمة المتأثرة -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>التأثير (1-10)</label>
+                    <select id="incidentImpact" class="form-control">
+                        <option value="1">1 - منخفض جداً</option>
+                        <option value="2">2 - منخفض</option>
+                        <option value="3">3 - متوسط</option>
+                        <option value="4">4 - متوسط مرتفع</option>
+                        <option value="5" selected>5 - مرتفع</option>
+                        <option value="6">6 - مرتفع جداً</option>
+                        <option value="7">7 - حرج</option>
+                        <option value="8">8 - حرج جداً</option>
+                        <option value="9">9 - كارثي</option>
+                        <option value="10">10 - كارثي جداً</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>الأنظمة المتأثرة</label>
+                    <input type="text" id="incidentSystems" class="form-control" placeholder="مثل: خادم الويب, قاعدة البيانات">
+                </div>
+            </div>
+            
+            <!-- ملاحظات إضافية -->
+            <div class="form-group">
+                <label>ملاحظات إضافية</label>
+                <textarea id="incidentNotes" class="form-control" rows="2" placeholder="أي معلومات إضافية عن الحادث"></textarea>
+            </div>
+            
+            <!-- أزرار النموذج -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeAddIncident()">إلغاء</button>
+                <button type="submit" class="btn btn-primary" id="submitIncidentBtn">💾 حفظ الحادث</button>
+            </div>
         </form>
     </div>
 </div>
@@ -406,41 +605,101 @@ function logout() {
 }
 
 // ==========================================
-// الحوادث
+// بيانات الحوادث
 // ==========================================
 var incidents = [
-    { id: 'INC-2026-001', title: 'هجوم DDoS على خوادم الويب', priority: 'critical', status: 'new', time: '2026-01-21 14:30' },
-    { id: 'INC-2026-002', title: 'محاولة حقن SQL في قاعدة البيانات', priority: 'high', status: 'investigating', time: '2026-01-21 13:15' },
-    { id: 'INC-2026-003', title: 'انتشار برمجية فدية على الشبكة', priority: 'critical', status: 'new', time: '2026-01-21 12:00' }
+    { 
+        id: 'INC-2026-001', 
+        title: 'هجوم DDoS على خوادم الويب', 
+        priority: 'critical', 
+        status: 'new',
+        assigned: 'غير معين',
+        type: 'DDoS',
+        source: '192.168.1.100',
+        target: '10.0.0.5',
+        date: '2026-01-21',
+        time: '14:30',
+        impact: '8',
+        systems: 'خوادم الويب الرئيسية',
+        notes: 'هجوم كبير الحجم'
+    },
+    { 
+        id: 'INC-2026-002', 
+        title: 'محاولة حقن SQL في قاعدة البيانات', 
+        priority: 'high', 
+        status: 'investigating',
+        assigned: 'سارة الخالدي',
+        type: 'SQL Injection',
+        source: '45.33.22.11',
+        target: '10.0.0.10',
+        date: '2026-01-21',
+        time: '13:15',
+        impact: '7',
+        systems: 'قاعدة البيانات الرئيسية',
+        notes: 'محاولة استغلال ثغرة SQL'
+    },
+    { 
+        id: 'INC-2026-003', 
+        title: 'انتشار برمجية فدية على الشبكة', 
+        priority: 'critical', 
+        status: 'new',
+        assigned: 'غير معين',
+        type: 'Ransomware',
+        source: '192.168.5.50',
+        target: '10.0.0.15',
+        date: '2026-01-21',
+        time: '12:00',
+        impact: '9',
+        systems: 'أجهزة الموظفين, خوادم الملفات',
+        notes: 'انتشار سريع في الشبكة'
+    }
 ];
-var filteredIncidents = [...incidents];
 
+var filteredIncidents = [...incidents];
+var incidentCounter = 4;
+
+// ==========================================
+// عرض الحوادث
+// ==========================================
 function renderIncidents(data) {
     var tbody = document.getElementById('incidentsBody');
     if (!tbody) return;
+    
     var html = '';
     data.forEach(function(t) {
+        var statusMap = {
+            'new': 'جديد',
+            'investigating': 'قيد التحقيق',
+            'in_progress': 'قيد المعالجة',
+            'resolved': 'محلول',
+            'closed': 'مغلق'
+        };
         html += '<tr>' +
             '<td>' + t.id + '</td>' +
             '<td>' + t.title + '</td>' +
             '<td><span class="badge badge-' + t.priority + '">' + t.priority + '</span></td>' +
-            '<td><span class="badge badge-' + t.status + '">' + t.status + '</span></td>' +
-            '<td>' + t.time + '</td>' +
+            '<td><span class="badge badge-' + t.status + '">' + (statusMap[t.status] || t.status) + '</span></td>' +
+            '<td>' + (t.assigned || 'غير معين') + '</td>' +
+            '<td>' + t.date + ' ' + t.time + '</td>' +
             '<td>' +
-                '<button class="btn btn-sm btn-success" onclick="updateStatus(\'' + t.id + '\',\'resolved\')">✅</button>' +
-                '<button class="btn btn-sm btn-warning" onclick="updateStatus(\'' + t.id + '\',\'investigating\')">🔍</button>' +
-                '<button class="btn btn-sm btn-danger" onclick="deleteIncident(\'' + t.id + '\')">🗑️</button>' +
+                '<button class="btn btn-sm btn-success" onclick="updateStatus(\'' + t.id + '\',\'resolved\')" title="حل">✅</button>' +
+                '<button class="btn btn-sm btn-warning" onclick="updateStatus(\'' + t.id + '\',\'investigating\')" title="تحقيق">🔍</button>' +
+                '<button class="btn btn-sm btn-danger" onclick="deleteIncident(\'' + t.id + '\')" title="حذف">🗑️</button>' +
             '</td>' +
         '</tr>';
     });
-    tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">لا توجد حوادث</td></tr>';
+    tbody.innerHTML = html || '<tr><td colspan="7" style="text-align:center; color:#64748b; padding:20px;">لا توجد حوادث</td></tr>';
     
+    // تحديث الإحصائيات
     document.getElementById('totalIncidents').textContent = data.length;
     document.getElementById('criticalIncidents').textContent = data.filter(function(t) { return t.priority === 'critical'; }).length;
-    document.getElementById('openIncidents').textContent = data.filter(function(t) { return t.status === 'new' || t.status === 'investigating'; }).length;
-    document.getElementById('resolvedIncidents').textContent = data.filter(function(t) { return t.status === 'resolved'; }).length;
+    document.getElementById('openIncidents').textContent = data.filter(function(t) { return t.status === 'new' || t.status === 'investigating' || t.status === 'in_progress'; }).length;
+    document.getElementById('resolvedIncidents').textContent = data.filter(function(t) { return t.status === 'resolved' || t.status === 'closed'; }).length;
 }
 
+// ==========================================
+// الفلاتر
+// ==========================================
 function filterIncidents(status) {
     if (status === 'all') {
         filteredIncidents = [...incidents];
@@ -450,6 +709,9 @@ function filterIncidents(status) {
     renderIncidents(filteredIncidents);
 }
 
+// ==========================================
+// تحديث حالة الحادث
+// ==========================================
 function updateStatus(id, status) {
     var incident = incidents.find(function(t) { return t.id === id; });
     if (incident) {
@@ -459,6 +721,9 @@ function updateStatus(id, status) {
     }
 }
 
+// ==========================================
+// حذف حادث
+// ==========================================
 function deleteIncident(id) {
     if (confirm('⚠️ هل أنت متأكد من حذف هذا الحادث؟')) {
         incidents = incidents.filter(function(t) { return t.id !== id; });
@@ -467,39 +732,115 @@ function deleteIncident(id) {
     }
 }
 
+// ==========================================
+// إضافة حادث - جميع الحقول
+// ==========================================
 function showAddIncident() {
     document.getElementById('addIncidentModal').classList.add('show');
+    // تعبئة التاريخ والوقت الحاليين
+    var now = new Date();
+    var date = now.toISOString().split('T')[0];
+    var time = now.toTimeString().slice(0, 5);
+    document.getElementById('incidentDate').value = date;
+    document.getElementById('incidentTime').value = time;
 }
+
 function closeAddIncident() {
     document.getElementById('addIncidentModal').classList.remove('show');
+    document.getElementById('addIncidentForm').reset();
 }
 
 function addIncident(event) {
     event.preventDefault();
+    
+    // جمع البيانات من النموذج
     var title = document.getElementById('incidentTitle').value.trim();
+    var description = document.getElementById('incidentDescription').value.trim();
     var priority = document.getElementById('incidentPriority').value;
-    if (!title) { alert('⚠️ الرجاء إدخال عنوان الحادث'); return; }
+    var status = document.getElementById('incidentStatus').value;
+    var assigned = document.getElementById('incidentAssign').value;
+    var type = document.getElementById('incidentType').value;
+    var source = document.getElementById('incidentSource').value.trim();
+    var target = document.getElementById('incidentTarget').value.trim();
+    var date = document.getElementById('incidentDate').value;
+    var time = document.getElementById('incidentTime').value;
+    var impact = document.getElementById('incidentImpact').value;
+    var systems = document.getElementById('incidentSystems').value.trim();
+    var notes = document.getElementById('incidentNotes').value.trim();
+    
+    // التحقق من الحقول المطلوبة
+    if (!title || !description) {
+        alert('⚠️ الرجاء إدخال عنوان ووصف الحادث');
+        return;
+    }
+    
+    // إنشاء حادث جديد
     var newIncident = {
-        id: 'INC-2026-' + String(incidents.length + 4).padStart(3, '0'),
+        id: 'INC-2026-' + String(incidentCounter).padStart(3, '0'),
         title: title,
+        description: description,
         priority: priority,
-        status: 'new',
-        time: new Date().toISOString().replace('T', ' ').slice(0, 16)
+        status: status,
+        assigned: assigned || 'غير معين',
+        type: type,
+        source: source || '-',
+        target: target || '-',
+        date: date || new Date().toISOString().split('T')[0],
+        time: time || new Date().toTimeString().slice(0, 5),
+        impact: impact,
+        systems: systems || '-',
+        notes: notes || '-'
     };
+    
     incidents.unshift(newIncident);
+    incidentCounter++;
     filterIncidents('all');
     closeAddIncident();
     document.getElementById('addIncidentForm').reset();
-    alert('✅ تم إضافة الحادث بنجاح!');
+    alert('✅ تم إضافة الحادث ' + newIncident.id + ' بنجاح!');
 }
 
+// ==========================================
+// تحديث وتصدير
+// ==========================================
 function refreshIncidents() {
     filterIncidents('all');
     alert('🔄 تم تحديث البيانات!');
 }
 
+function exportIncidents() {
+    var csv = 'رقم الحادث,العنوان,الأولوية,الحالة,المسؤول,النوع,المصدر,الهدف,التاريخ,الوقت,التأثير,الأنظمة,الملاحظات\n';
+    filteredIncidents.forEach(function(t) {
+        csv += t.id + ',' + t.title + ',' + t.priority + ',' + t.status + ',' + (t.assigned || '') + ',' + 
+               t.type + ',' + t.source + ',' + t.target + ',' + t.date + ',' + t.time + ',' + t.impact + ',' + 
+               t.systems + ',' + t.notes + '\n';
+    });
+    var blob = new Blob([csv], { type: 'text/csv' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'incidents_export.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('📥 تم تصدير البيانات بنجاح!');
+}
+
+// ==========================================
+// إغلاق النافذة عند النقر خارجها
+// ==========================================
+document.addEventListener('click', function(event) {
+    var modal = document.getElementById('addIncidentModal');
+    if (event.target === modal) {
+        closeAddIncident();
+    }
+});
+
+// ==========================================
+// إغلاق السايدبار عند النقر على الروابط
+// ==========================================
 document.addEventListener('DOMContentLoaded', function() {
     renderIncidents(incidents);
+    
     var links = document.querySelectorAll('.sidebar .nav-link');
     links.forEach(function(link) {
         link.addEventListener('click', function() {
