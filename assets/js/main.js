@@ -618,6 +618,30 @@ function toggleSidebar() {
     APP.config.sidebarCollapsed = sidebar.classList.contains('collapsed');
     localStorage.setItem('soc_sidebar', APP.config.sidebarCollapsed);
 }
+// ==========================================
+// تبديل القائمة الجانبية (للجوال)
+// ==========================================
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+    }
+}
+
+// إغلاق القائمة عند النقر خارجها (للجوال)
+document.addEventListener('click', function(event) {
+    var sidebar = document.getElementById('sidebar');
+    var toggle = document.querySelector('.menu-toggle');
+    
+    if (sidebar && toggle) {
+        var isClickInsideSidebar = sidebar.contains(event.target);
+        var isClickOnToggle = toggle.contains(event.target);
+        
+        if (!isClickInsideSidebar && !isClickOnToggle) {
+            sidebar.classList.remove('open');
+        }
+    }
+});
 
 // ======================================================
 // 7. مبدل الخلفيات
