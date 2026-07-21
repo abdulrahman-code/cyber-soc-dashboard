@@ -1,80 +1,183 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="dark">
+<html lang="ar" dir="rtl">
 <head>
-    <link rel="stylesheet" href="assets/css/style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberSOC Dashboard - الحوادث</title>
-    <meta name="description" content="إدارة الحوادث الأمنية وتتبعها">
+    <title>CyberSOC - الحوادث</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    
+    <style>
+        /* نفس التنسيقات السابقة */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0a0e1a; color: #f1f5f9; min-height: 100vh; overflow-x: hidden; }
+        
+        .sidebar {
+            position: fixed; top: 0; right: 0; width: 240px; height: 100vh;
+            background: #111827; padding: 20px 16px; overflow-y: auto;
+            z-index: 1000; border-left: 1px solid #1e293b;
+            transition: right 0.3s ease;
+        }
+        @media (max-width: 992px) {
+            .sidebar { right: -280px; width: 260px; }
+            .sidebar.open { right: 0; }
+        }
+        
+        .sidebar .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; padding: 4px 8px; }
+        .sidebar .logo-icon { font-size: 28px; }
+        .sidebar .logo-text { font-size: 20px; font-weight: 700; color: #00f0ff; }
+        .sidebar .nav-menu { list-style: none; }
+        .sidebar .nav-item { margin-bottom: 2px; }
+        .sidebar .nav-link {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            border-radius: 8px; color: #94a3b8; text-decoration: none;
+            transition: 0.3s; font-size: 14px;
+        }
+        .sidebar .nav-link:hover { background: rgba(0, 240, 255, 0.08); color: #f1f5f9; }
+        .sidebar .nav-link.active { background: rgba(0, 240, 255, 0.12); color: #00f0ff; }
+        .sidebar .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar .nav-badge { margin-left: auto; background: #ef4444; color: white; font-size: 9px; padding: 1px 7px; border-radius: 10px; }
+        .sidebar-footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid #1e293b; }
+        .user-info { display: flex; align-items: center; gap: 10px; padding: 4px 8px; }
+        .user-avatar { font-size: 20px; }
+        .user-name { font-size: 13px; font-weight: 600; }
+        .user-role { font-size: 11px; color: #64748b; }
+        
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; }
+        .sidebar-overlay.active { display: block; }
+        @media (min-width: 993px) { .sidebar-overlay { display: none !important; } }
+        
+        .main-content { margin-right: 240px; padding: 16px 20px; min-height: 100vh; transition: margin-right 0.3s ease; }
+        @media (max-width: 992px) { .main-content { margin-right: 0; padding: 12px 14px; } }
+        
+        .menu-toggle { display: none; background: none; border: none; color: #f1f5f9; font-size: 24px; cursor: pointer; padding: 4px 8px; }
+        .menu-toggle:hover { color: #00f0ff; }
+        @media (max-width: 992px) { .menu-toggle { display: block; } }
+        
+        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #1e293b; border-radius: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+        .topbar-left { display: flex; align-items: center; gap: 10px; }
+        .page-title { font-size: 18px; font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        #clock { font-size: 13px; color: #94a3b8; }
+        
+        .btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.3s; text-decoration: none; }
+        .btn-outline { background: transparent; border: 1px solid #334155; color: #f1f5f9; }
+        .btn-outline:hover { border-color: #00f0ff; color: #00f0ff; }
+        .btn-primary { background: #00f0ff; color: #0a0e1a; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,240,255,0.3); }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(239,68,68,0.3); }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-sm { padding: 3px 10px; font-size: 11px; }
+        
+        .lang-toggle { background: rgba(255,255,255,0.05); border: 1px solid #334155; color: #f1f5f9; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.3s; }
+        .lang-toggle:hover { background: rgba(0,240,255,0.08); border-color: #00f0ff; }
+        
+        .glass-card { background: #1e293b; border-radius: 12px; padding: 16px; border: 1px solid #334155; transition: 0.3s; }
+        .glass-card:hover { border-color: #00f0ff; transform: translateY(-2px); }
+        .grid { display: grid; gap: 12px; margin-bottom: 12px; }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .stat-card { min-height: 70px; }
+        .stat-number { font-size: 24px; font-weight: 700; color: #00f0ff; }
+        .stat-label { font-size: 12px; color: #94a3b8; }
+        .flex-between { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+        
+        .table-container { overflow-x: auto; background: rgba(30,41,59,0.5); border-radius: 12px; border: 1px solid #334155; }
+        .table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .table th { padding: 8px 12px; text-align: right; color: #94a3b8; border-bottom: 1px solid #334155; font-weight: 600; font-size: 11px; }
+        .table td { padding: 6px 12px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .table tbody tr:hover { background: rgba(0,240,255,0.03); }
+        
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 600; }
+        .badge-critical { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .badge-high { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .badge-medium { background: rgba(59,130,246,0.2); color: #3b82f6; }
+        .badge-low { background: rgba(16,185,129,0.2); color: #10b981; }
+        .badge-active { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .badge-investigating { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .badge-resolved { background: rgba(16,185,129,0.2); color: #10b981; }
+        .badge-new { background: rgba(236,72,153,0.2); color: #ec4899; }
+        
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; color: #94a3b8; font-size: 11px; margin-bottom: 3px; }
+        .form-control { width: 100%; padding: 8px 12px; background: rgba(10,14,26,0.6); border: 1px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 12px; }
+        .form-control:focus { outline: none; border-color: #00f0ff; }
+        
+        #loading-screen { position: fixed; inset: 0; background: #0a0e1a; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
+        #loading-screen.hide { opacity: 0; pointer-events: none; }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid rgba(0,240,255,0.1); border-top-color: #00f0ff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { margin-top: 12px; color: #94a3b8; font-size: 13px; }
+        
+        footer { margin-top: 20px; padding: 12px; text-align: center; color: #64748b; font-size: 11px; border-top: 1px solid #1e293b; }
+        
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 2000; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: #1e293b; border-radius: 12px; padding: 24px; max-width: 450px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid #334155; }
+        .modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #f1f5f9; font-size: 22px; cursor: pointer; }
+        
+        @media (max-width: 768px) {
+            .grid-4 { grid-template-columns: 1fr 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .stat-number { font-size: 20px; }
+            .stat-card { min-height: 60px; }
+            .topbar { padding: 8px 12px; }
+            .page-title { font-size: 15px; }
+            .glass-card { padding: 12px; }
+            .table th, .table td { padding: 4px 8px; font-size: 10px; }
+            .badge { font-size: 8px; padding: 1px 6px; }
+        }
+        @media (max-width: 576px) {
+            .grid-4 { grid-template-columns: 1fr; }
+            .stat-number { font-size: 18px; }
+            .topbar-right { gap: 4px; }
+            .lang-toggle { font-size: 10px; padding: 2px 8px; }
+            #clock { font-size: 11px; }
+            .btn { font-size: 10px; padding: 2px 8px; }
+            .modal-content { padding: 16px; }
+        }
+        
+        [data-theme="light"] body { background: #f0f4ff; color: #0f172a; }
+        [data-theme="light"] .sidebar { background: #ffffff; border-left-color: #e2e8f0; }
+        [data-theme="light"] .glass-card { background: #ffffff; border-color: #e2e8f0; }
+        [data-theme="light"] .topbar { background: #ffffff; }
+        [data-theme="light"] .table-container { background: #ffffff; }
+        [data-theme="light"] .stat-number { color: #4f46e5; }
+        [data-theme="light"] .btn-outline { border-color: #e2e8f0; color: #0f172a; }
+        [data-theme="light"] .lang-toggle { border-color: #e2e8f0; color: #0f172a; }
+        [data-theme="light"] .form-control { background: #f8fafc; color: #0f172a; border-color: #e2e8f0; }
+        [data-theme="light"] .modal-content { background: #ffffff; border-color: #e2e8f0; }
+    </style>
 </head>
 <body>
 
-<!-- ====================================================== -->
+<!-- ========================================== -->
 <!-- شاشة التحميل -->
-<!-- ====================================================== -->
+<!-- ========================================== -->
 <div id="loading-screen">
     <div class="loading-spinner"></div>
     <div class="loading-text">🛡️ جاري تحميل المنصة...</div>
 </div>
-<script>
-// ==========================================
-// التحقق من تسجيل الدخول
-// ==========================================
-(function() {
-    var loggedIn = sessionStorage.getItem('loggedIn');
-    if (!loggedIn || loggedIn !== 'true') {
-        window.location.href = 'login.html';
-    }
-})();
-</script>
 
-<!-- ====================================================== -->
-<!-- الشريط الجانبي -->
-<!-- ====================================================== -->
+<!-- ========================================== -->
+<!-- السايدبار -->
+<!-- ========================================== -->
 <aside class="sidebar" id="sidebar">
     <div class="logo">
         <span class="logo-icon">🛡️</span>
         <span class="logo-text">CyberSOC</span>
     </div>
-    
     <nav>
         <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="index.html" class="nav-link">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-text" data-translate="dashboard">لوحة التحكم</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="threats.html" class="nav-link">
-                    <span class="nav-icon">⚠️</span>
-                    <span class="nav-text" data-translate="threats">التهديدات</span>
-                    <span class="nav-badge" id="threat-badge">12</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="incidents.html" class="nav-link active">
-                    <span class="nav-icon">🚨</span>
-                    <span class="nav-text" data-translate="incidents">الحوادث</span>
-                    <span class="nav-badge" id="incident-badge">5</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="about.html" class="nav-link">
-                    <span class="nav-icon">ℹ️</span>
-                    <span class="nav-text">من نحن</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="settings.html" class="nav-link">
-                    <span class="nav-icon">⚙️</span>
-                    <span class="nav-text" data-translate="settings">الإعدادات</span>
-                </a>
-            </li>
+            <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span><span class="nav-text">لوحة التحكم</span></a></li>
+            <li class="nav-item"><a href="threats.html" class="nav-link"><span class="nav-icon">⚠️</span><span class="nav-text">التهديدات</span><span class="nav-badge">12</span></a></li>
+            <li class="nav-item"><a href="incidents.html" class="nav-link active"><span class="nav-icon">🚨</span><span class="nav-text">الحوادث</span><span class="nav-badge">5</span></a></li>
+            <li class="nav-item"><a href="about.html" class="nav-link"><span class="nav-icon">ℹ️</span><span class="nav-text">من نحن</span></a></li>
+            <li class="nav-item"><a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span><span class="nav-text">الإعدادات</span></a></li>
         </ul>
     </nav>
-    
     <div class="sidebar-footer">
         <div class="user-info">
             <span class="user-avatar">👤</span>
@@ -86,114 +189,132 @@
     </div>
 </aside>
 
-<!-- ====================================================== -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ========================================== -->
 <!-- المحتوى الرئيسي -->
-<!-- ====================================================== -->
+<!-- ========================================== -->
 <main class="main-content" id="main-content">
     
-    <!-- الشريط العلوي -->
     <header class="topbar">
         <div class="topbar-left">
-            <button class="menu-toggle" onclick="toggleSidebar()" aria-label="تبديل القائمة">
-        ☰
-    </button>
-            <h1 class="page-title" data-translate="incidents">الحوادث</h1>
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+            <h1 class="page-title">الحوادث</h1>
         </div>
-        
         <div class="topbar-right">
-            <span id="clock" style="font-size:14px; color:var(--text-secondary); font-weight:500;">--:--:--</span>
-            <button class="lang-toggle" aria-label="تبديل اللغة">🇬🇧 EN</button>
-            <button class="theme-toggle" aria-label="تبديل الثيم">🌙</button>
-            <div class="notification-badge">
-                <span style="font-size:22px;">🔔</span>
-                <span class="badge-count" id="notif-count">3</span>
-            </div>
+            <span id="clock">--:--:--</span>
+            <button class="lang-toggle" onclick="toggleLanguage()">🇬🇧 EN</button>
+            <button class="btn btn-outline btn-sm" onclick="logout()">🚪 خروج</button>
         </div>
     </header>
     
-    <!-- إحصائيات سريعة -->
-    <section class="grid grid-4" style="margin-bottom: var(--spacing-lg);">
+    <!-- الإحصائيات -->
+    <section class="grid grid-4">
         <div class="glass-card stat-card">
-            <div class="stat-number" id="total-incidents" style="font-size: 28px;">0</div>
+            <div class="stat-number" style="font-size:22px;" id="totalIncidents">5</div>
             <div class="stat-label">إجمالي الحوادث</div>
         </div>
         <div class="glass-card stat-card">
-            <div class="stat-number" id="critical-incidents" style="font-size: 28px; background: linear-gradient(135deg, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+            <div class="stat-number" style="font-size:22px; color:#ef4444;" id="criticalIncidents">2</div>
             <div class="stat-label">حرجة</div>
         </div>
         <div class="glass-card stat-card">
-            <div class="stat-number" id="open-incidents" style="font-size: 28px; background: linear-gradient(135deg, #f59e0b, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+            <div class="stat-number" style="font-size:22px; color:#f59e0b;" id="openIncidents">3</div>
             <div class="stat-label">مفتوحة</div>
         </div>
         <div class="glass-card stat-card">
-            <div class="stat-number" id="resolved-incidents" style="font-size: 28px; background: linear-gradient(135deg, #10b981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+            <div class="stat-number" style="font-size:22px; color:#10b981;" id="resolvedIncidents">1</div>
             <div class="stat-label">محلولة</div>
         </div>
     </section>
     
     <!-- أزرار الإجراءات -->
-    <section class="flex-between" style="margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-sm);">
-        <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
-            <button class="btn btn-primary" onclick="showAddIncident()">➕ إضافة حادث جديد</button>
-            <button class="btn btn-outline" onclick="refreshData()">🔄 تحديث</button>
+    <div class="flex-between" style="margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="showAddIncident()">➕ إضافة حادث</button>
+            <button class="btn btn-outline btn-sm" onclick="refreshIncidents()">🔄 تحديث</button>
         </div>
-        <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+        <div style="display:flex; gap:4px; flex-wrap:wrap;">
             <button class="btn btn-sm btn-outline" onclick="filterIncidents('all')">الكل</button>
             <button class="btn btn-sm btn-outline" onclick="filterIncidents('new')">جديد</button>
             <button class="btn btn-sm btn-outline" onclick="filterIncidents('investigating')">قيد التحقيق</button>
             <button class="btn btn-sm btn-outline" onclick="filterIncidents('resolved')">محلول</button>
         </div>
+    </div>
+    
+    <!-- الجدول -->
+    <section class="glass-card">
+        <h3 style="font-size:14px; margin-bottom:8px;">📋 قائمة الحوادث</h3>
+        <div class="table-container">
+            <table class="table" id="incidentsTable">
+                <thead>
+                    <tr>
+                        <th>رقم الحادث</th>
+                        <th>العنوان</th>
+                        <th>الأولوية</th>
+                        <th>الحالة</th>
+                        <th>التوقيت</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="incidentsBody">
+                    <tr>
+                        <td>INC-2026-001</td>
+                        <td>هجوم DDoS على خوادم الويب</td>
+                        <td><span class="badge badge-critical">حرجة</span></td>
+                        <td><span class="badge badge-new">جديد</span></td>
+                        <td>2026-01-21 14:30</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="updateStatus('INC-2026-001','resolved')">✅</button>
+                            <button class="btn btn-sm btn-warning" onclick="updateStatus('INC-2026-001','investigating')">🔍</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteIncident('INC-2026-001')">🗑️</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>INC-2026-002</td>
+                        <td>محاولة حقن SQL في قاعدة البيانات</td>
+                        <td><span class="badge badge-high">عالية</span></td>
+                        <td><span class="badge badge-investigating">قيد التحقيق</span></td>
+                        <td>2026-01-21 13:15</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="updateStatus('INC-2026-002','resolved')">✅</button>
+                            <button class="btn btn-sm btn-warning" onclick="updateStatus('INC-2026-002','investigating')">🔍</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteIncident('INC-2026-002')">🗑️</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>INC-2026-003</td>
+                        <td>انتشار برمجية فدية على الشبكة</td>
+                        <td><span class="badge badge-critical">حرجة</span></td>
+                        <td><span class="badge badge-new">جديد</span></td>
+                        <td>2026-01-21 12:00</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="updateStatus('INC-2026-003','resolved')">✅</button>
+                            <button class="btn btn-sm btn-warning" onclick="updateStatus('INC-2026-003','investigating')">🔍</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteIncident('INC-2026-003')">🗑️</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </section>
     
-    <!-- لوحة Kanban -->
-    <section class="grid grid-3" style="margin-bottom: var(--spacing-lg);">
-        <!-- عمود جديد -->
-        <div class="glass-card" style="min-height: 300px;">
-            <h4 style="color: var(--neon-red); margin-bottom: var(--spacing-md);">🆕 جديد</h4>
-            <div id="kanban-new" class="kanban-column">
-                <!-- يتم ملؤها بواسطة JavaScript -->
-            </div>
-        </div>
-        
-        <!-- عمود قيد التحقيق -->
-        <div class="glass-card" style="min-height: 300px;">
-            <h4 style="color: var(--neon-yellow); margin-bottom: var(--spacing-md);">🔍 قيد التحقيق</h4>
-            <div id="kanban-investigating" class="kanban-column">
-                <!-- يتم ملؤها بواسطة JavaScript -->
-            </div>
-        </div>
-        
-        <!-- عمود محلول -->
-        <div class="glass-card" style="min-height: 300px;">
-            <h4 style="color: var(--neon-green); margin-bottom: var(--spacing-md);">✅ محلول</h4>
-            <div id="kanban-resolved" class="kanban-column">
-                <!-- يتم ملؤها بواسطة JavaScript -->
-            </div>
-        </div>
-    </section>
-    
-    <!-- تذييل الصفحة -->
-    <footer style="margin-top: var(--spacing-2xl); padding: var(--spacing-md); text-align: center; color: var(--text-muted); font-size: 13px;">
+    <footer>
         <p>🛡️ CyberSOC Dashboard v1.0.0 | جميع الحقوق محفوظة © 2026</p>
-        <p style="margin-top: var(--spacing-xs); font-size: 12px; opacity: 0.6;">نظام مراقبة وتحليل الأمن السيبراني - تعمل بأمان 🔒</p>
     </footer>
 </main>
 
-<!-- ====================================================== -->
-<!-- نافذة إضافة حادث (Modal) -->
-<!-- ====================================================== -->
-<div id="addIncidentModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="glass-card" style="max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative;">
-        <button onclick="closeAddIncident()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-primary); font-size: 24px; cursor: pointer;">✕</button>
-        <h3 style="margin-bottom: var(--spacing-lg);">➕ إضافة حادث جديد</h3>
-        <form id="addIncidentForm">
+<!-- ========================================== -->
+<!-- نافذة إضافة حادث -->
+<!-- ========================================== -->
+<div class="modal" id="addIncidentModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeAddIncident()">✕</button>
+        <h3 style="margin-bottom:12px;">➕ إضافة حادث جديد</h3>
+        <form id="addIncidentForm" onsubmit="addIncident(event)">
             <div class="form-group">
                 <label>عنوان الحادث</label>
                 <input type="text" id="incidentTitle" class="form-control" placeholder="أدخل عنوان الحادث" required>
-            </div>
-            <div class="form-group">
-                <label>الوصف</label>
-                <textarea id="incidentDescription" class="form-control" rows="3" placeholder="وصف الحادث" required></textarea>
             </div>
             <div class="form-group">
                 <label>الأولوية</label>
@@ -204,202 +325,190 @@
                     <option value="low">منخفضة</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>تعيين إلى</label>
-                <select id="incidentAssign" class="form-control">
-                    <option value="">غير معين</option>
-                    <option value="1">أحمد محمد</option>
-                    <option value="2">سارة الخالدي</option>
-                    <option value="3">محمد العتيبي</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%;">إضافة الحادث</button>
+            <button type="submit" class="btn btn-primary" style="width:100%;">إضافة الحادث</button>
         </form>
     </div>
 </div>
 
-<script src="assets/js/main.js"></script>
-
+<!-- ========================================== -->
+<!-- JavaScript -->
+<!-- ========================================== -->
 <script>
-// بيانات حوادث تجريبية
-const sampleIncidents = [
-    { id: 'INC-2026-001', title: 'هجوم DDoS على خوادم الويب', priority: 'critical', status: 'new', assigned: 'غير معين', time: '2026-01-15 14:30:22' },
-    { id: 'INC-2026-002', title: 'محاولة حقن SQL في قاعدة البيانات', priority: 'high', status: 'investigating', assigned: 'سارة الخالدي', time: '2026-01-15 13:15:45' },
-    { id: 'INC-2026-003', title: 'انتشار برمجية فدية على الشبكة', priority: 'critical', status: 'new', assigned: 'غير معين', time: '2026-01-15 12:00:10' },
-    { id: 'INC-2026-004', title: 'محاولات اختراق SSH متكررة', priority: 'high', status: 'resolved', assigned: 'محمد العتيبي', time: '2026-01-15 10:45:18' },
-    { id: 'INC-2026-005', title: 'ثغرة في تطبيق CRM', priority: 'medium', status: 'investigating', assigned: 'أحمد محمد', time: '2026-01-15 09:30:55' },
-];
-
-let currentFilter = 'all';
-let incidentIdCounter = 6;
-
-// ساعة رقمية
+// ==========================================
+// الساعة
+// ==========================================
 function updateClock() {
-    const now = new Date();
-    const time = now.toLocaleTimeString('ar-SA', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    document.getElementById('clock').textContent = '🕐 ' + time;
+    var clock = document.getElementById('clock');
+    if (!clock) return;
+    var now = new Date();
+    var time = now.toLocaleTimeString('ar-SA', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    clock.textContent = '🕐 ' + time;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// عرض لوحة Kanban
-function renderKanban() {
-    // تصفية الحوادث
-    let filtered = [...sampleIncidents];
-    if (currentFilter !== 'all') {
-        filtered = filtered.filter(i => i.status === currentFilter);
+// ==========================================
+// شاشة التحميل
+// ==========================================
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        var loading = document.getElementById('loading-screen');
+        if (loading) loading.classList.add('hide');
+    }, 500);
+});
+
+// ==========================================
+// السايدبار
+// ==========================================
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    if (window.innerWidth <= 992) {
+        if (sidebar) sidebar.classList.toggle('open');
+        if (overlay) overlay.classList.toggle('active');
     }
-    
-    // تحديث الإحصائيات
-    document.getElementById('total-incidents').textContent = sampleIncidents.length;
-    document.getElementById('critical-incidents').textContent = sampleIncidents.filter(i => i.priority === 'critical').length;
-    document.getElementById('open-incidents').textContent = sampleIncidents.filter(i => i.status === 'new' || i.status === 'investigating').length;
-    document.getElementById('resolved-incidents').textContent = sampleIncidents.filter(i => i.status === 'resolved').length;
-    document.getElementById('incident-badge').textContent = sampleIncidents.filter(i => i.status === 'new').length;
-    
-    // أعمدة Kanban
-    const columns = {
-        'new': document.getElementById('kanban-new'),
-        'investigating': document.getElementById('kanban-investigating'),
-        'resolved': document.getElementById('kanban-resolved'),
-    };
-    
-    // تنظيف الأعمدة
-    Object.values(columns).forEach(col => col.innerHTML = '');
-    
-    // ملء الأعمدة
-    filtered.forEach(incident => {
-        const card = document.createElement('div');
-        card.className = 'glass-card';
-        card.style.cssText = 'padding: var(--spacing-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all 0.3s ease;';
-        card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: start;">
-                <div>
-                    <strong style="font-size: 14px;">${incident.title}</strong>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                        <span class="badge badge-${incident.priority}">${incident.priority}</span>
-                        <span style="margin: 0 5px;">|</span>
-                        ${incident.id}
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                        👤 ${incident.assigned}
-                    </div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                        🕐 ${incident.time}
-                    </div>
-                </div>
-                <div style="display: flex; gap: 4px;">
-                    <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); updateIncidentStatus('${incident.id}', 'resolved')" title="حل">✅</button>
-                    <button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); updateIncidentStatus('${incident.id}', 'investigating')" title="تحقيق">🔍</button>
-                    <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteIncident('${incident.id}')" title="حذف">🗑️</button>
-                </div>
-            </div>
-        `;
-        card.onclick = () => showIncidentDetails(incident.id);
-        columns[incident.status]?.appendChild(card);
-    });
-    
-    // رسائل فارغة
-    Object.entries(columns).forEach(([status, col]) => {
-        if (col.children.length === 0) {
-            col.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: var(--spacing-lg);">لا توجد حوادث ${status === 'new' ? 'جديدة' : status === 'investigating' ? 'قيد التحقيق' : 'محلولة'}</p>`;
-        }
-    });
+}
+function closeSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+}
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 992) closeSidebar();
+});
+
+// ==========================================
+// اللغة
+// ==========================================
+function toggleLanguage() {
+    var current = document.documentElement.lang;
+    var next = current === 'ar' ? 'en' : 'ar';
+    document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = next;
+    var btn = document.querySelector('.lang-toggle');
+    if (btn) btn.textContent = next === 'ar' ? '🇬🇧 EN' : '🇸🇦 عربي';
 }
 
-// تحديث حالة الحادث
-function updateIncidentStatus(id, status) {
-    const incident = sampleIncidents.find(i => i.id === id);
+// ==========================================
+// تسجيل الخروج
+// ==========================================
+function logout() {
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        sessionStorage.clear();
+        window.location.href = 'login.html';
+    }
+}
+
+// ==========================================
+// الحوادث
+// ==========================================
+var incidents = [
+    { id: 'INC-2026-001', title: 'هجوم DDoS على خوادم الويب', priority: 'critical', status: 'new', time: '2026-01-21 14:30' },
+    { id: 'INC-2026-002', title: 'محاولة حقن SQL في قاعدة البيانات', priority: 'high', status: 'investigating', time: '2026-01-21 13:15' },
+    { id: 'INC-2026-003', title: 'انتشار برمجية فدية على الشبكة', priority: 'critical', status: 'new', time: '2026-01-21 12:00' }
+];
+var filteredIncidents = [...incidents];
+
+function renderIncidents(data) {
+    var tbody = document.getElementById('incidentsBody');
+    if (!tbody) return;
+    var html = '';
+    data.forEach(function(t) {
+        html += '<tr>' +
+            '<td>' + t.id + '</td>' +
+            '<td>' + t.title + '</td>' +
+            '<td><span class="badge badge-' + t.priority + '">' + t.priority + '</span></td>' +
+            '<td><span class="badge badge-' + t.status + '">' + t.status + '</span></td>' +
+            '<td>' + t.time + '</td>' +
+            '<td>' +
+                '<button class="btn btn-sm btn-success" onclick="updateStatus(\'' + t.id + '\',\'resolved\')">✅</button>' +
+                '<button class="btn btn-sm btn-warning" onclick="updateStatus(\'' + t.id + '\',\'investigating\')">🔍</button>' +
+                '<button class="btn btn-sm btn-danger" onclick="deleteIncident(\'' + t.id + '\')">🗑️</button>' +
+            '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">لا توجد حوادث</td></tr>';
+    
+    document.getElementById('totalIncidents').textContent = data.length;
+    document.getElementById('criticalIncidents').textContent = data.filter(function(t) { return t.priority === 'critical'; }).length;
+    document.getElementById('openIncidents').textContent = data.filter(function(t) { return t.status === 'new' || t.status === 'investigating'; }).length;
+    document.getElementById('resolvedIncidents').textContent = data.filter(function(t) { return t.status === 'resolved'; }).length;
+}
+
+function filterIncidents(status) {
+    if (status === 'all') {
+        filteredIncidents = [...incidents];
+    } else {
+        filteredIncidents = incidents.filter(function(t) { return t.status === status; });
+    }
+    renderIncidents(filteredIncidents);
+}
+
+function updateStatus(id, status) {
+    var incident = incidents.find(function(t) { return t.id === id; });
     if (incident) {
         incident.status = status;
-        renderKanban();
-        alert(`✅ تم تحديث حالة الحادث ${id} إلى: ${status}`);
+        filterIncidents('all');
+        alert('✅ تم تحديث حالة الحادث إلى: ' + status);
     }
 }
 
-// حذف حادث
 function deleteIncident(id) {
-    if (confirm(`⚠️ هل أنت متأكد من حذف الحادث ${id}؟`)) {
-        const index = sampleIncidents.findIndex(i => i.id === id);
-        if (index > -1) {
-            sampleIncidents.splice(index, 1);
-            renderKanban();
-            alert('🗑️ تم حذف الحادث بنجاح');
-        }
+    if (confirm('⚠️ هل أنت متأكد من حذف هذا الحادث؟')) {
+        incidents = incidents.filter(function(t) { return t.id !== id; });
+        filterIncidents('all');
+        alert('🗑️ تم حذف الحادث');
     }
 }
 
-// تصفية الحوادث
-function filterIncidents(filter) {
-    currentFilter = filter;
-    document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
-    renderKanban();
-}
-
-// عرض تفاصيل الحادث
-function showIncidentDetails(id) {
-    const incident = sampleIncidents.find(i => i.id === id);
-    if (!incident) return;
-    alert(`📋 تفاصيل الحادث:\n\nID: ${incident.id}\nالعنوان: ${incident.title}\nالأولوية: ${incident.priority}\nالحالة: ${incident.status}\nالمسؤول: ${incident.assigned}\nالتوقيت: ${incident.time}`);
-}
-
-// عرض نافذة إضافة حادث
 function showAddIncident() {
-    document.getElementById('addIncidentModal').style.display = 'flex';
-    document.getElementById('addIncidentForm').reset();
+    document.getElementById('addIncidentModal').classList.add('show');
 }
-
-// إغلاق نافذة إضافة حادث
 function closeAddIncident() {
-    document.getElementById('addIncidentModal').style.display = 'none';
+    document.getElementById('addIncidentModal').classList.remove('show');
 }
 
-// إضافة حادث جديد
-document.getElementById('addIncidentForm')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const title = document.getElementById('incidentTitle').value.trim();
-    const description = document.getElementById('incidentDescription').value.trim();
-    const priority = document.getElementById('incidentPriority').value;
-    const assigned = document.getElementById('incidentAssign').value;
-    
-    if (!title || !description) {
-        alert('⚠️ يرجى ملء جميع الحقول المطلوبة');
-        return;
-    }
-    
-    const newIncident = {
-        id: `INC-2026-${String(incidentIdCounter).padStart(3, '0')}`,
+function addIncident(event) {
+    event.preventDefault();
+    var title = document.getElementById('incidentTitle').value.trim();
+    var priority = document.getElementById('incidentPriority').value;
+    if (!title) { alert('⚠️ الرجاء إدخال عنوان الحادث'); return; }
+    var newIncident = {
+        id: 'INC-2026-' + String(incidents.length + 4).padStart(3, '0'),
         title: title,
         priority: priority,
         status: 'new',
-        assigned: assigned ? (assigned === '1' ? 'أحمد محمد' : assigned === '2' ? 'سارة الخالدي' : 'محمد العتيبي') : 'غير معين',
-        time: new Date().toISOString().replace('T', ' ').slice(0, 19),
+        time: new Date().toISOString().replace('T', ' ').slice(0, 16)
     };
-    
-    sampleIncidents.unshift(newIncident);
-    incidentIdCounter++;
-    renderKanban();
+    incidents.unshift(newIncident);
+    filterIncidents('all');
     closeAddIncident();
-    alert(`✅ تم إضافة الحادث ${newIncident.id} بنجاح!`);
-});
-
-// تحديث البيانات
-function refreshData() {
-    alert('🔄 جاري تحديث البيانات...');
-    renderKanban();
+    document.getElementById('addIncidentForm').reset();
+    alert('✅ تم إضافة الحادث بنجاح!');
 }
 
-// تحميل الصفحة
+function refreshIncidents() {
+    filterIncidents('all');
+    alert('🔄 تم تحديث البيانات!');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    renderKanban();
-    document.getElementById('notif-count').textContent = '3';
+    renderIncidents(incidents);
+    var links = document.querySelectorAll('.sidebar .nav-link');
+    links.forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 992) closeSidebar();
+        });
+    });
 });
 
-// إغلاق النافذة عند النقر خارجها
-document.getElementById('addIncidentModal')?.addEventListener('click', function(e) {
-    if (e.target === this) closeAddIncident();
-});
+console.log('✅ Incidents page ready!');
 </script>
 
 </body>
