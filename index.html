@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSOC Dashboard - لوحة التحكم</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+// ==========================================
+// التحقق من تسجيل الدخول
+// ==========================================
+(function checkAuth() {
+    var loggedIn = sessionStorage.getItem('loggedIn');
+    if (!loggedIn || loggedIn !== 'true') {
+        window.location.href = 'login.html';
+    }
+})();
+</script>
+</head>
+<body>
+
+<!-- شاشة التحميل -->
+<div id="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">🛡️ جاري تحميل المنصة...</div>
+</div>
+
+<!-- ========================================== -->
+<!-- الشريط الجانبي -->
+<!-- ========================================== -->
+<aside class="sidebar" id="sidebar">
+    <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">CyberSOC</span>
+    </div>
+    
+    <nav>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="index.html" class="nav-link active">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">لوحة التحكم</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="threats.html" class="nav-link">
+                    <span class="nav-icon">⚠️</span>
+                    <span class="nav-text">التهديدات</span>
+                    <span class="nav-badge" id="threat-badge">12</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="incidents.html" class="nav-link">
+                    <span class="nav-icon">🚨</span>
+                    <span class="nav-text">الحوادث</span>
+                    <span class="nav-badge" id="incident-badge">5</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="about.html" class="nav-link">
+                    <span class="nav-icon">ℹ️</span>
+                    <span class="nav-text">من نحن</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="settings.html" class="nav-link">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">الإعدادات</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <span class="user-avatar">👤</span>
+            <div>
+                <div class="user-name">مدير النظام</div>
+                <div class="user-role">Admin</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- ========================================== -->
+<!-- المحتوى الرئيسي -->
+<!-- ========================================== -->
+<main class="main-content" id="main-content">
+    
+    <!-- الشريط العلوي -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" aria-label="تبديل القائمة">☰</button>
+            <h1 class="page-title">لوحة التحكم</h1>
+        </div>
+        <div class="topbar-right">
+    <!-- الساعة -->
+    <span id="clock">--:--:--</span>
+    
+    <!-- تبديل اللغة -->
+    <button class="lang-toggle">🇬🇧 EN</button>
+    
+    <!-- زر تسجيل الخروج -->
+    <button class="btn btn-outline btn-sm" onclick="logout()" style="font-size: 12px;">
+        🚪 خروج
+    </button>
+    
+    <!-- الإشعارات -->
+    <div class="notification-badge">
+        <!-- ... -->
+    </div>
+</div>
+        
+        <div class="topbar-right">
+            <span id="clock">--:--:--</span>
+            <button class="lang-toggle">🇬🇧 EN</button>
+            
+            <div class="notification-badge">
+                <span style="font-size:18px;">🔔</span>
+                <span class="badge-count" id="notif-count">3</span>
+                <div class="notification-dropdown" id="notif-dropdown">
+                    <div class="notification-item">
+                        <div class="notif-title">🚨 تهديد حرج جديد</div>
+                        <div class="notif-time">منذ 5 دقائق</div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="notif-title">📋 حادث معين لك</div>
+                        <div class="notif-time">منذ 20 دقيقة</div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="notif-title">✅ تحديث حالة الحادث</div>
+                        <div class="notif-time">منذ ساعة</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- بطاقات الإحصائيات -->
+    <section class="grid grid-4" style="margin-bottom: 14px;">
+        <div class="glass-card glass-card-glow stat-card">
+            <div class="flex-between">
+                <span class="stat-icon">🛡️</span>
+                <span class="stat-change positive">↑ 12%</span>
+            </div>
+            <div class="stat-number" id="total-threats">0</div>
+            <div class="stat-label">إجمالي التهديدات</div>
+        </div>
+        
+        <div class="glass-card glass-card-glow stat-card">
+            <div class="flex-between">
+                <span class="stat-icon">🔥</span>
+                <span class="stat-change negative">↑ 8%</span>
+            </div>
+            <div class="stat-number" id="critical-threats" style="color: #ef4444;">0</div>
+            <div class="stat-label">تهديدات حرجة</div>
+        </div>
+        
+        <div class="glass-card glass-card-glow stat-card">
+            <div class="flex-between">
+                <span class="stat-icon">🚨</span>
+                <span class="stat-change neutral">↑ 3%</span>
+            </div>
+            <div class="stat-number" id="total-incidents" style="color: #f59e0b;">0</div>
+            <div class="stat-label">إجمالي الحوادث</div>
+        </div>
+        
+        <div class="glass-card glass-card-glow stat-card">
+            <div class="flex-between">
+                <span class="stat-icon">⏳</span>
+                <span class="stat-change positive">↓ 5%</span>
+            </div>
+            <div class="stat-number" id="active-incidents" style="color: #3b82f6;">0</div>
+            <div class="stat-label">حوادث نشطة</div>
+        </div>
+    </section>
+    
+    <!-- الرسوم البيانية -->
+    <section class="grid grid-2" style="margin-bottom: 14px;">
+        <div class="glass-card">
+            <h3 style="margin-bottom: 8px; font-size: 14px;">📈 تحليل الهجمات</h3>
+            <div class="chart-container">
+                <canvas id="attacksChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="glass-card">
+            <h3 style="margin-bottom: 8px; font-size: 14px;">🎯 توزيع التهديدات</h3>
+            <div class="chart-container">
+                <canvas id="severityChart"></canvas>
+            </div>
+        </div>
+    </section>
+    
+    <!-- أحدث التهديدات -->
+    <section class="glass-card" style="margin-bottom: 14px;">
+        <div class="flex-between" style="margin-bottom: 8px;">
+            <h3 style="font-size: 14px;">⚠️ أحدث التهديدات</h3>
+            <a href="threats.html" style="color: #00f0ff; text-decoration: none; font-size: 12px;">عرض الكل →</a>
+        </div>
+        <div class="table-container">
+            <table class="table" id="threats-table">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>النوع</th>
+                        <th>الخطورة</th>
+                        <th>المصدر</th>
+                        <th>الحالة</th>
+                        <th>التوقيت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- يتم ملؤها بواسطة JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+    
+    <!-- الحوادث الأخيرة -->
+    <section class="glass-card">
+        <div class="flex-between" style="margin-bottom: 8px;">
+            <h3 style="font-size: 14px;">🚨 آخر الحوادث</h3>
+            <a href="incidents.html" style="color: #00f0ff; text-decoration: none; font-size: 12px;">عرض الكل →</a>
+        </div>
+        <div class="table-container">
+            <table class="table" id="incidents-table">
+                <thead>
+                    <tr>
+                        <th>رقم الحادث</th>
+                        <th>العنوان</th>
+                        <th>الأولوية</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الإنشاء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- يتم ملؤها بواسطة JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+    
+    <!-- تذييل -->
+    <footer style="margin-top: 24px; padding: 10px; text-align: center; color: #64748b; font-size: 12px;">
+        <p>🛡️ CyberSOC Dashboard v1.0.0 | جميع الحقوق محفوظة © 2026</p>
+    </footer>
+</main>
+
+<script src="assets/js/main.js"></script>
+
+<script>
+// ساعة
+function updateClock() {
+    var clock = document.getElementById('clock');
+    if (!clock) return;
+    var now = new Date();
+    var time = now.toLocaleTimeString('ar-SA', { 
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    clock.textContent = '🕐 ' + time;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// الرسوم البيانية
+document.addEventListener('DOMContentLoaded', function() {
+    // رسم بياني للهجمات
+    var attacksCtx = document.getElementById('attacksChart')?.getContext('2d');
+    if (attacksCtx) {
+        new Chart(attacksCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
+                datasets: [{
+                    label: 'الهجمات',
+                    data: [12, 8, 45, 67, 34, 56, 23],
+                    borderColor: '#00f0ff',
+                    backgroundColor: 'rgba(0, 240, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#00f0ff',
+                    pointBorderColor: '#00f0ff',
+                    pointRadius: 3,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#94a3b8', font: { size: 11 } }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#94a3b8', font: { size: 10 } }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#94a3b8', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+    
+    // رسم بياني للخطورة
+    var severityCtx = document.getElementById('severityChart')?.getContext('2d');
+    if (severityCtx) {
+        new Chart(severityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['حرجة', 'عالية', 'متوسطة', 'منخفضة'],
+                datasets: [{
+                    data: [8, 15, 22, 10],
+                    backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'],
+                    borderColor: '#1e293b',
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', font: { size: 11 }, padding: 10 }
+                    }
+                }
+            }
+        });
+    }
+    
+    // تحديث الإحصائيات
+    document.getElementById('total-threats').textContent = '55';
+    document.getElementById('critical-threats').textContent = '8';
+    document.getElementById('total-incidents').textContent = '23';
+    document.getElementById('active-incidents').textContent = '5';
+});
+</script>
+<script>
+// ==========================================
+// تسجيل الخروج
+// ==========================================
+function logout() {
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        sessionStorage.removeItem('loggedIn');
+        sessionStorage.removeItem('username');
+        sessionStorage.removeItem('userRole');
+        sessionStorage.removeItem('userName');
+        window.location.href = 'login.html';
+    }
+}
+</script>4
+
+</body>
+</html>

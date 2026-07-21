@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSOC Dashboard - التهديدات</title>
+    <meta name="description" content="تحليل التهديدات الأمنية وإدارتها">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+
+<!-- ====================================================== -->
+<!-- شاشة التحميل -->
+<!-- ====================================================== -->
+<div id="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">🛡️ جاري تحميل المنصة...</div>
+</div>
+<script>
+// ==========================================
+// التحقق من تسجيل الدخول
+// ==========================================
+(function() {
+    var loggedIn = sessionStorage.getItem('loggedIn');
+    if (!loggedIn || loggedIn !== 'true') {
+        window.location.href = 'login.html';
+    }
+})();
+</script>
+
+<!-- ====================================================== -->
+<!-- الشريط الجانبي -->
+<!-- ====================================================== -->
+<aside class="sidebar" id="sidebar">
+    <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">CyberSOC</span>
+    </div>
+    
+    <nav>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="index.html" class="nav-link">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text" data-translate="dashboard">لوحة التحكم</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="threats.html" class="nav-link active">
+                    <span class="nav-icon">⚠️</span>
+                    <span class="nav-text" data-translate="threats">التهديدات</span>
+                    <span class="nav-badge" id="threat-badge">12</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="incidents.html" class="nav-link">
+                    <span class="nav-icon">🚨</span>
+                    <span class="nav-text" data-translate="incidents">الحوادث</span>
+                    <span class="nav-badge" id="incident-badge">5</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="about.html" class="nav-link">
+                    <span class="nav-icon">ℹ️</span>
+                    <span class="nav-text">من نحن</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="settings.html" class="nav-link">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text" data-translate="settings">الإعدادات</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <span class="user-avatar">👤</span>
+            <div>
+                <div class="user-name">مدير النظام</div>
+                <div class="user-role">Admin</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- ====================================================== -->
+<!-- المحتوى الرئيسي -->
+<!-- ====================================================== -->
+<main class="main-content" id="main-content">
+    
+    <!-- الشريط العلوي -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" aria-label="تبديل القائمة">☰</button>
+            <h1 class="page-title" data-translate="threats">التهديدات</h1>
+        </div>
+        
+        <div class="topbar-right">
+            <span id="clock" style="font-size:14px; color:var(--text-secondary); font-weight:500;">--:--:--</span>
+            <button class="lang-toggle" aria-label="تبديل اللغة">🇬🇧 EN</button>
+            <button class="theme-toggle" aria-label="تبديل الثيم">🌙</button>
+            <div class="notification-badge">
+                <span style="font-size:22px;">🔔</span>
+                <span class="badge-count" id="notif-count">3</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- إحصائيات سريعة -->
+    <section class="grid grid-4" style="margin-bottom: var(--spacing-lg);">
+        <div class="glass-card stat-card">
+            <div class="stat-number" id="total-threats" style="font-size: 28px;">0</div>
+            <div class="stat-label">إجمالي التهديدات</div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-number" id="critical-threats" style="font-size: 28px; background: linear-gradient(135deg, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+            <div class="stat-label">حرجة</div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-number" id="high-threats" style="font-size: 28px; background: linear-gradient(135deg, #f59e0b, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+            <div class="stat-label">عالية</div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-number" id="active-threats" style="font-size: 28px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+            <div class="stat-label">نشطة</div>
+        </div>
+    </section>
+    
+    <!-- فلتر البحث -->
+    <section class="glass-card" style="margin-bottom: var(--spacing-lg);">
+        <div class="grid grid-4" style="gap: var(--spacing-md);">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 13px;">🔍 البحث</label>
+                <input type="text" id="searchThreat" class="form-control" placeholder="ابحث عن تهديد...">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 13px;">⚠️ الخطورة</label>
+                <select id="filterSeverity" class="form-control">
+                    <option value="all">الكل</option>
+                    <option value="critical">حرجة</option>
+                    <option value="high">عالية</option>
+                    <option value="medium">متوسطة</option>
+                    <option value="low">منخفضة</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 13px;">📌 الحالة</label>
+                <select id="filterStatus" class="form-control">
+                    <option value="all">الكل</option>
+                    <option value="active">نشطة</option>
+                    <option value="investigating">قيد التحقيق</option>
+                    <option value="contained">محتواة</option>
+                    <option value="resolved">محلولة</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0; display: flex; align-items: flex-end;">
+                <button id="applyFilters" class="btn btn-primary" style="width: 100%;">تطبيق الفلتر</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- جدول التهديدات -->
+    <section class="glass-card">
+        <div class="flex-between" style="margin-bottom: var(--spacing-md);">
+            <h3 style="font-size: 16px;">📋 قائمة التهديدات</h3>
+            <div style="display: flex; gap: var(--spacing-sm);">
+                <button class="btn btn-sm btn-outline" onclick="exportData('csv')">📥 CSV</button>
+                <button class="btn btn-sm btn-outline" onclick="exportData('pdf')">📄 PDF</button>
+                <button class="btn btn-sm btn-primary" onclick="refreshData()">🔄 تحديث</button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table class="table" id="threats-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الاسم</th>
+                        <th>النوع</th>
+                        <th>الخطورة</th>
+                        <th>المصدر</th>
+                        <th>الوجهة</th>
+                        <th>الحالة</th>
+                        <th>التوقيت</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="threats-body">
+                    <!-- يتم ملؤها بواسطة JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        <div class="flex-between" style="margin-top: var(--spacing-md);">
+            <span style="color: var(--text-muted); font-size: 13px;" id="threats-count">عرض 0 من 0</span>
+            <div style="display: flex; gap: var(--spacing-sm);">
+                <button class="btn btn-sm btn-outline" id="prevPage" disabled>السابق</button>
+                <span style="color: var(--text-secondary); font-size: 13px; display: flex; align-items: center;" id="page-info">صفحة 1</span>
+                <button class="btn btn-sm btn-outline" id="nextPage">التالي</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- تذييل الصفحة -->
+    <footer style="margin-top: var(--spacing-2xl); padding: var(--spacing-md); text-align: center; color: var(--text-muted); font-size: 13px;">
+        <p>🛡️ CyberSOC Dashboard v1.0.0 | جميع الحقوق محفوظة © 2026</p>
+        <p style="margin-top: var(--spacing-xs); font-size: 12px; opacity: 0.6;">نظام مراقبة وتحليل الأمن السيبراني - تعمل بأمان 🔒</p>
+    </footer>
+</main>
+
+
+<!-- ====================================================== -->
+<!-- نافذة تفاصيل التهديد (Modal) -->
+<!-- ====================================================== -->
+<div id="threatModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="glass-card" style="max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative;">
+        <button onclick="closeModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-primary); font-size: 24px; cursor: pointer;">✕</button>
+        <div id="modalContent">
+            <h3 id="modalTitle" style="margin-bottom: var(--spacing-md);">تفاصيل التهديد</h3>
+            <div id="modalDetails">
+                <!-- يتم ملؤها بواسطة JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="assets/js/main.js"></script>
+
+<script>
+// بيانات تهديدات تجريبية
+const sampleThreats = [
+    { id: 1, name: 'هجوم DDoS متقدم', type: 'DDoS', severity: 'critical', source: '192.168.1.100', dest: '10.0.0.5', status: 'active', time: '2026-01-15 14:30:22' },
+    { id: 2, name: 'محاولة حقن SQL', type: 'SQL Injection', severity: 'high', source: '45.33.22.11', dest: '10.0.0.10', status: 'investigating', time: '2026-01-15 13:15:45' },
+    { id: 3, name: 'برمجية فدية WannaCry', type: 'Ransomware', severity: 'critical', source: '192.168.5.50', dest: '10.0.0.15', status: 'active', time: '2026-01-15 12:00:10' },
+    { id: 4, name: 'حملة تصيد احتيالي', type: 'Phishing', severity: 'medium', source: '203.0.113.45', dest: '10.0.0.20', status: 'investigating', time: '2026-01-15 11:20:33' },
+    { id: 5, name: 'محاولات Brute Force SSH', type: 'Brute Force', severity: 'high', source: '198.51.100.67', dest: '10.0.0.25', status: 'resolved', time: '2026-01-15 10:45:18' },
+    { id: 6, name: 'ثغرة في تطبيق CRM', type: 'Web Exploit', severity: 'high', source: '185.220.101.23', dest: '10.0.0.30', status: 'active', time: '2026-01-15 09:30:55' },
+    { id: 7, name: 'هجوم MitM على الشبكة', type: 'Man-in-the-Middle', severity: 'medium', source: '192.168.2.88', dest: '10.0.0.35', status: 'investigating', time: '2026-01-15 08:15:40' },
+    { id: 8, name: 'برمجية خبيثة في المرفقات', type: 'Malware', severity: 'high', source: '95.179.130.42', dest: '10.0.0.40', status: 'contained', time: '2026-01-15 07:00:12' },
+];
+
+let currentPage = 1;
+const pageSize = 5;
+let filteredThreats = [...sampleThreats];
+
+// ساعة رقمية
+function updateClock() {
+    const now = new Date();
+    const time = now.toLocaleTimeString('ar-SA', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('clock').textContent = '🕐 ' + time;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// تحديث الإحصائيات
+function updateStats() {
+    const total = filteredThreats.length;
+    const critical = filteredThreats.filter(t => t.severity === 'critical').length;
+    const high = filteredThreats.filter(t => t.severity === 'high').length;
+    const active = filteredThreats.filter(t => t.status === 'active').length;
+    
+    document.getElementById('total-threats').textContent = total;
+    document.getElementById('critical-threats').textContent = critical;
+    document.getElementById('high-threats').textContent = high;
+    document.getElementById('active-threats').textContent = active;
+    document.getElementById('threat-badge').textContent = active;
+}
+
+// عرض الجدول
+function renderTable() {
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    const pageData = filteredThreats.slice(start, end);
+    const tbody = document.getElementById('threats-body');
+    
+    tbody.innerHTML = pageData.map((t, index) => `
+        <tr onclick="showThreatDetails(${t.id})" style="cursor: pointer;">
+            <td>${start + index + 1}</td>
+            <td>${t.name}</td>
+            <td>${t.type}</td>
+            <td><span class="badge badge-${t.severity}">${t.severity}</span></td>
+            <td>${t.source}</td>
+            <td>${t.dest}</td>
+            <td><span class="badge badge-${t.status}">${t.status}</span></td>
+            <td>${t.time}</td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); showThreatDetails(${t.id})">👁️</button>
+                <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteThreat(${t.id})">🗑️</button>
+            </td>
+        </tr>
+    `).join('');
+    
+    // تحديث معلومات الصفحة
+    const totalPages = Math.ceil(filteredThreats.length / pageSize);
+    document.getElementById('threats-count').textContent = `عرض ${filteredThreats.length > 0 ? start + 1 : 0} - ${Math.min(end, filteredThreats.length)} من ${filteredThreats.length}`;
+    document.getElementById('page-info').textContent = `صفحة ${currentPage} من ${totalPages || 1}`;
+    document.getElementById('prevPage').disabled = currentPage === 1;
+    document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
+    
+    updateStats();
+}
+
+// عرض تفاصيل التهديد
+function showThreatDetails(id) {
+    const threat = sampleThreats.find(t => t.id === id);
+    if (!threat) return;
+    
+    document.getElementById('modalTitle').textContent = `🔍 تفاصيل التهديد: ${threat.name}`;
+    document.getElementById('modalDetails').innerHTML = `
+        <div style="display: grid; gap: var(--spacing-sm);">
+            <div><strong>النوع:</strong> ${threat.type}</div>
+            <div><strong>الخطورة:</strong> <span class="badge badge-${threat.severity}">${threat.severity}</span></div>
+            <div><strong>المصدر:</strong> ${threat.source}</div>
+            <div><strong>الوجهة:</strong> ${threat.dest}</div>
+            <div><strong>الحالة:</strong> <span class="badge badge-${threat.status}">${threat.status}</span></div>
+            <div><strong>التوقيت:</strong> ${threat.time}</div>
+            <div style="margin-top: var(--spacing-md);">
+                <button class="btn btn-sm btn-success" onclick="updateThreatStatus(${threat.id}, 'resolved')">✅ حل</button>
+                <button class="btn btn-sm btn-warning" onclick="updateThreatStatus(${threat.id}, 'investigating')">🔍 تحقيق</button>
+                <button class="btn btn-sm btn-danger" onclick="updateThreatStatus(${threat.id}, 'contained')">⛔ احتواء</button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('threatModal').style.display = 'flex';
+}
+
+// إغلاق النافذة
+function closeModal() {
+    document.getElementById('threatModal').style.display = 'none';
+}
+
+// تحديث حالة التهديد
+function updateThreatStatus(id, status) {
+    const threat = sampleThreats.find(t => t.id === id);
+    if (threat) {
+        threat.status = status;
+        renderTable();
+        closeModal();
+        alert(`✅ تم تحديث حالة التهديد إلى: ${status}`);
+    }
+}
+
+// حذف تهديد
+function deleteThreat(id) {
+    if (confirm('⚠️ هل أنت متأكد من حذف هذا التهديد؟')) {
+        const index = sampleThreats.findIndex(t => t.id === id);
+        if (index > -1) {
+            sampleThreats.splice(index, 1);
+            filteredThreats = [...sampleThreats];
+            renderTable();
+            alert('🗑️ تم حذف التهديد بنجاح');
+        }
+    }
+}
+
+// تصدير البيانات
+function exportData(type) {
+    if (type === 'csv') {
+        let csv = 'الاسم,النوع,الخطورة,المصدر,الوجهة,الحالة,التوقيت\n';
+        filteredThreats.forEach(t => {
+            csv += `${t.name},${t.type},${t.severity},${t.source},${t.dest},${t.status},${t.time}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'threats_export.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    } else {
+        alert('📄 سيتم تصدير PDF قريباً');
+    }
+}
+
+// تحديث البيانات
+function refreshData() {
+    alert('🔄 جاري تحديث البيانات...');
+    renderTable();
+}
+
+// تطبيق الفلاتر
+document.getElementById('applyFilters')?.addEventListener('click', function() {
+    const search = document.getElementById('searchThreat').value.toLowerCase();
+    const severity = document.getElementById('filterSeverity').value;
+    const status = document.getElementById('filterStatus').value;
+    
+    filteredThreats = sampleThreats.filter(t => {
+        const matchSearch = t.name.toLowerCase().includes(search) || t.type.toLowerCase().includes(search);
+        const matchSeverity = severity === 'all' || t.severity === severity;
+        const matchStatus = status === 'all' || t.status === status;
+        return matchSearch && matchSeverity && matchStatus;
+    });
+    
+    currentPage = 1;
+    renderTable();
+});
+
+// التنقل بين الصفحات
+document.getElementById('prevPage')?.addEventListener('click', function() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+    }
+});
+
+document.getElementById('nextPage')?.addEventListener('click', function() {
+    const totalPages = Math.ceil(filteredThreats.length / pageSize);
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+    }
+});
+
+// البحث الفوري
+document.getElementById('searchThreat')?.addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('applyFilters').click();
+    }
+});
+
+// تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    renderTable();
+    document.getElementById('notif-count').textContent = '3';
+});
+</script>
+
+</body>
+</html>
