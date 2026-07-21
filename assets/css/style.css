@@ -653,7 +653,7 @@ select.form-control {
 }
 
 .loading-spinner {
-    width: 40px;
+    width: 40px; 🔔 3 
     height: 40px;
     border: 3px solid rgba(0, 240, 255, 0.1);
     border-top-color: #00f0ff;
@@ -1225,4 +1225,90 @@ footer {
     [dir="rtl"] .main-content {
         margin-right: 0 !important;
     }
+}
+/* ==========================================
+   القائمة الجانبية - للجوال (حل مضمون)
+   ========================================== */
+
+/* زر القائمة */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #f1f5f9;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: all 0.3s;
+    z-index: 1001;
+}
+
+.menu-toggle:hover {
+    color: #00f0ff;
+}
+
+/* إظهار زر القائمة في الجوال */
+@media (max-width: 992px) {
+    .menu-toggle {
+        display: block !important;
+    }
+}
+
+/* القائمة الجانبية */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    background: #111827;
+    transition: right 0.3s ease;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+    border-left: 1px solid #1e293b;
+}
+
+[dir="rtl"] .sidebar {
+    right: auto;
+    left: -100%;
+    border-left: none;
+    border-right: 1px solid #1e293b;
+}
+
+/* عند فتح القائمة */
+.sidebar.open {
+    right: 0 !important;
+}
+
+[dir="rtl"] .sidebar.open {
+    right: auto;
+    left: 0 !important;
+}
+
+/* خلفية مظلمة */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999;
+    backdrop-filter: blur(4px);
+}
+
+.sidebar-overlay.active {
+    display: block !important;
+}
+
+/* المحتوى الرئيسي */
+.main-content {
+    margin-left: 0 !important;
+    padding: 12px;
+}
+
+[dir="rtl"] .main-content {
+    margin-right: 0 !important;
 }
