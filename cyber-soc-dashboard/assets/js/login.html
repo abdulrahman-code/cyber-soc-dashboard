@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - CyberSOC Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- ========================================== -->
+<!-- صفحة تسجيل الدخول -->
+<!-- ========================================== -->
+<div class="login-page">
+    <div class="login-container">
+        <!-- شعار -->
+        <div class="login-logo">
+            <span class="login-logo-icon">🛡️</span>
+            <span class="login-logo-text">CyberSOC</span>
+        </div>
+        
+        <h2 class="login-title">تسجيل الدخول</h2>
+        <p class="login-subtitle">قم بتسجيل الدخول للوصول إلى لوحة التحكم</p>
+        
+        <!-- نموذج تسجيل الدخول -->
+        <form id="loginForm" class="login-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username">👤 اسم المستخدم</label>
+                <input type="text" id="username" class="form-control" placeholder="أدخل اسم المستخدم" required value="admin">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">🔒 كلمة المرور</label>
+                <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور" required value="admin">
+            </div>
+            
+            <div class="login-options">
+                <label class="remember-me">
+                    <input type="checkbox" id="rememberMe" checked>
+                    <span>تذكرني</span>
+                </label>
+                <a href="#" class="forgot-password">نسيت كلمة المرور؟</a>
+            </div>
+            
+            <button type="submit" class="btn btn-primary login-btn">🚀 تسجيل الدخول</button>
+            
+            <div id="loginError" class="login-error" style="display: none;">
+                ⚠️ اسم المستخدم أو كلمة المرور غير صحيحة
+            </div>
+        </form>
+        
+        <!-- معلومات المستخدمين التجريبيين -->
+        <div class="login-demo">
+            <p class="demo-title">👥 مستخدمون تجريبيون:</p>
+            <div class="demo-users">
+                <div class="demo-user" onclick="fillCredentials('admin', 'admin')">
+                    <span class="demo-role">Admin</span>
+                    <span class="demo-creds">admin / admin</span>
+                </div>
+                <div class="demo-user" onclick="fillCredentials('analyst1', 'admin')">
+                    <span class="demo-role">Analyst</span>
+                    <span class="demo-creds">analyst1 / admin</span>
+                </div>
+                <div class="demo-user" onclick="fillCredentials('viewer1', 'admin')">
+                    <span class="demo-role">Viewer</span>
+                    <span class="demo-creds">viewer1 / admin</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- تذييل -->
+        <div class="login-footer">
+            <p>🛡️ CyberSOC Dashboard v1.0.0</p>
+            <p style="font-size: 11px; color: #64748b; margin-top: 4px;">نظام مراقبة وتحليل الأمن السيبراني</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// معالجة تسجيل الدخول
+// ==========================================
+function handleLogin(event) {
+    event.preventDefault();
+    
+    var username = document.getElementById('username').value.trim();
+    var password = document.getElementById('password').value.trim();
+    var errorDiv = document.getElementById('loginError');
+    
+    // المستخدمين المسموح لهم (تجريبي)
+    var users = {
+        'admin': { password: 'admin', role: 'admin', name: 'مدير النظام' },
+        'analyst1': { password: 'admin', role: 'analyst', name: 'محلل أمني أول' },
+        'analyst2': { password: 'admin', role: 'analyst', name: 'محلل أمني' },
+        'viewer1': { password: 'admin', role: 'viewer', name: 'مشاهد' }
+    };
+    
+    // التحقق من المستخدم
+    if (users[username] && users[username].password === password) {
+        // حفظ بيانات المستخدم في sessionStorage
+        sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('username', username);
+        sessionStorage.setItem('userRole', users[username].role);
+        sessionStorage.setItem('userName', users[username].name);
+        
+        // تذكرني
+        if (document.getElementById('rememberMe').checked) {
+            localStorage.setItem('rememberUsername', username);
+        } else {
+            localStorage.removeItem('rememberUsername');
+        }
+        
+        // إخفاء الخطأ
+        errorDiv.style.display = 'none';
+        
+        // الانتقال إلى لوحة التحكم
+        window.location.href = 'index.html';
+    } else {
+        // عرض خطأ
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = '⚠️ اسم المستخدم أو كلمة المرور غير صحيحة';
+        
+        // هز النموذج
+        var form = document.getElementById('loginForm');
+        form.style.animation = 'shake 0.5s ease';
+        setTimeout(function() {
+            form.style.animation = '';
+        }, 500);
+    }
+}
+
+// ==========================================
+// تعبئة بيانات المستخدم التجريبي
+// ==========================================
+function fillCredentials(username, password) {
+    document.getElementById('username').value = username;
+    document.getElementById('password').value = password;
+    
+    // إزالة أي خطأ سابق
+    document.getElementById('loginError').style.display = 'none';
+    
+    // تسليط الضوء على الحقول
+    document.getElementById('username').style.borderColor = '#00f0ff';
+    document.getElementById('password').style.borderColor = '#00f0ff';
+    setTimeout(function() {
+        document.getElementById('username').style.borderColor = '';
+        document.getElementById('password').style.borderColor = '';
+    }, 1500);
+}
+
+// ==========================================
+// استعادة المستخدم المحفوظ
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+    var saved = localStorage.getItem('rememberUsername');
+    if (saved) {
+        document.getElementById('username').value = saved;
+        document.getElementById('rememberMe').checked = true;
+        // التركيز على كلمة المرور
+        document.getElementById('password').focus();
+    }
+});
+
+// ==========================================
+// تأثير الهز (CSS)
+// ==========================================
+var style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+<!-- ========================================== -->
+<!-- تنسيقات صفحة تسجيل الدخول -->
+<!-- ========================================== -->
+<style>
+    /* خلفية الصفحة */
+    .login-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0a0e1a;
+        padding: 20px;
+        background-image: 
+            radial-gradient(ellipse at 20% 50%, rgba(0, 240, 255, 0.05) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 50%, rgba(124, 58, 237, 0.05) 0%, transparent 60%);
+    }
+    
+    /* حاوية تسجيل الدخول */
+    .login-container {
+        background: #1e293b;
+        border-radius: 16px;
+        padding: 40px;
+        max-width: 400px;
+        width: 100%;
+        border: 1px solid #334155;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* حافة متوهجة */
+    .login-container::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #00f0ff, #7c3aed, #ec4899, #00f0ff);
+        border-radius: 18px;
+        z-index: -1;
+        opacity: 0.3;
+        background-size: 300% 300%;
+        animation: borderGradient 3s ease-in-out infinite;
+    }
+    
+    /* الشعار */
+    .login-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+    
+    .login-logo-icon {
+        font-size: 32px;
+    }
+    
+    .login-logo-text {
+        font-size: 24px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #00f0ff, #7c3aed);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .login-title {
+        text-align: center;
+        font-size: 22px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 4px;
+    }
+    
+    .login-subtitle {
+        text-align: center;
+        font-size: 14px;
+        color: #94a3b8;
+        margin-bottom: 28px;
+    }
+    
+    /* نموذج تسجيل الدخول */
+    .login-form .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .login-form .form-group label {
+        color: #94a3b8;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+    
+    .login-form .form-control {
+        background: #0a0e1a;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 10px 14px;
+        color: #f1f5f9;
+        font-size: 14px;
+        width: 100%;
+        transition: border-color 0.3s;
+    }
+    
+    .login-form .form-control:focus {
+        outline: none;
+        border-color: #00f0ff;
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+    }
+    
+    /* خيارات تسجيل الدخول */
+    .login-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #94a3b8;
+        font-size: 13px;
+        cursor: pointer;
+    }
+    
+    .remember-me input[type="checkbox"] {
+        accent-color: #00f0ff;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+    
+    .forgot-password {
+        color: #00f0ff;
+        font-size: 13px;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+    
+    .forgot-password:hover {
+        color: #7c3aed;
+        text-decoration: underline;
+    }
+    
+    /* زر تسجيل الدخول */
+    .login-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #00f0ff, #4f46e5);
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 600;
+    }
+    
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 240, 255, 0.3);
+    }
+    
+    /* خطأ تسجيل الدخول */
+    .login-error {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        padding: 10px 14px;
+        border-radius: 8px;
+        margin-top: 12px;
+        font-size: 13px;
+        text-align: center;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        display: none;
+    }
+    
+    /* المستخدمون التجريبيون */
+    .login-demo {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #334155;
+    }
+    
+    .demo-title {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+    
+    .demo-users {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .demo-user {
+        background: #0a0e1a;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 1px solid #334155;
+        text-align: center;
+        min-width: 80px;
+    }
+    
+    .demo-user:hover {
+        border-color: #00f0ff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 240, 255, 0.1);
+    }
+    
+    .demo-role {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #00f0ff;
+    }
+    
+    .demo-creds {
+        display: block;
+        font-size: 10px;
+        color: #64748b;
+        margin-top: 2px;
+    }
+    
+    /* تذييل */
+    .login-footer {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #334155;
+        color: #64748b;
+        font-size: 12px;
+    }
+    
+    /* ========================================== */
+    /* الثيم الفاتح */
+    /* ========================================== */
+    [data-theme="light"] .login-page {
+        background: #f0f4ff;
+    }
+    
+    [data-theme="light"] .login-container {
+        background: #ffffff;
+        border-color: #e2e8f0;
+    }
+    
+    [data-theme="light"] .login-form .form-control {
+        background: #f8fafc;
+        color: #0f172a;
+        border-color: #e2e8f0;
+    }
+    
+    [data-theme="light"] .login-title {
+        color: #0f172a;
+    }
+    
+    [data-theme="light"] .demo-user {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+    
+    [data-theme="light"] .login-demo {
+        border-top-color: #e2e8f0;
+    }
+    
+    [data-theme="light"] .login-footer {
+        border-top-color: #e2e8f0;
+    }
+    
+    /* ========================================== */
+    /* الاستجابة */
+    /* ========================================== */
+    @media (max-width: 576px) {
+        .login-container {
+            padding: 24px 20px;
+        }
+        
+        .login-title {
+            font-size: 18px;
+        }
+        
+        .login-logo-text {
+            font-size: 20px;
+        }
+        
+        .login-options {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+        
+        .demo-users {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .demo-user {
+            padding: 8px 12px;
+        }
+    }
+</style>
+
+</body>
+</html>
