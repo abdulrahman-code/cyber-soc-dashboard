@@ -2,34 +2,37 @@
 <html lang="ar" dir="rtl" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CyberSOC Dashboard - لوحة التحكم</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
     
     <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
     <script>
-// ==========================================
-// التحقق من تسجيل الدخول
-// ==========================================
-(function checkAuth() {
-    var loggedIn = sessionStorage.getItem('loggedIn');
-    if (!loggedIn || loggedIn !== 'true') {
-        window.location.href = 'login.html';
-    }
-})();
-</script>
+    // ==========================================
+    // التحقق من تسجيل الدخول
+    // ==========================================
+    (function checkAuth() {
+        var loggedIn = sessionStorage.getItem('loggedIn');
+        if (!loggedIn || loggedIn !== 'true') {
+            window.location.href = 'login.html';
+        }
+    })();
+    </script>
 </head>
 <body>
 
+<!-- ========================================== -->
 <!-- شاشة التحميل -->
+<!-- ========================================== -->
 <div id="loading-screen">
     <div class="loading-spinner"></div>
     <div class="loading-text">🛡️ جاري تحميل المنصة...</div>
 </div>
 
 <!-- ========================================== -->
-<!-- الشريط الجانبي -->
+<!-- الشريط الجانبي (Sidebar) -->
 <!-- ========================================== -->
 <aside class="sidebar" id="sidebar">
     <div class="logo">
@@ -73,23 +76,20 @@
             </li>
         </ul>
     </nav>
-    <!-- القائمة الجانبية -->
-<aside class="sidebar" id="sidebar">
-    <!-- محتوى القائمة -->
-</aside>
-
-<!-- ⬇️ هذا العنصر مهم جداً ⬇️ -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    
     <div class="sidebar-footer">
         <div class="user-info">
             <span class="user-avatar">👤</span>
             <div>
-                <div class="user-name">مدير النظام</div>
-                <div class="user-role">Admin</div>
+                <div class="user-name" id="userName">مدير النظام</div>
+                <div class="user-role" id="userRole">Admin</div>
             </div>
         </div>
     </div>
 </aside>
+
+<!-- الخلفية المظلمة للقائمة (للجوال) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <!-- ========================================== -->
 <!-- المحتوى الرئيسي -->
@@ -99,32 +99,16 @@
     <!-- الشريط العلوي -->
     <header class="topbar">
         <div class="topbar-left">
-          <button class="menu-toggle" onclick="toggleSidebar()" aria-label="تبديل القائمة">
-        ☰
-    </button>
+            <button class="menu-toggle" onclick="toggleSidebar()" aria-label="تبديل القائمة">
+                ☰
+            </button>
             <h1 class="page-title">لوحة التحكم</h1>
         </div>
-        <div class="topbar-right">
-    <!-- الساعة -->
-    <span id="clock">--:--:--</span>
-    
-    <!-- تبديل اللغة -->
-    <button class="lang-toggle">🇬🇧 EN</button>
-    
-    <!-- زر تسجيل الخروج -->
-    <button class="btn btn-outline btn-sm" onclick="logout()" style="font-size: 12px;">
-        🚪 خروج
-    </button>
-    
-    <!-- الإشعارات -->
-    <div class="notification-badge">
-        <!-- ... -->
-    </div>
-</div>
         
         <div class="topbar-right">
             <span id="clock">--:--:--</span>
-            <button class="lang-toggle">🇬🇧 EN</button>
+            <button class="lang-toggle" onclick="toggleLanguage()">🇬🇧 EN</button>
+            <button class="btn btn-outline btn-sm" onclick="logout()">🚪 خروج</button>
             
             <div class="notification-badge">
                 <span style="font-size:18px;">🔔</span>
@@ -147,7 +131,9 @@
         </div>
     </header>
     
+    <!-- ========================================== -->
     <!-- بطاقات الإحصائيات -->
+    <!-- ========================================== -->
     <section class="grid grid-4" style="margin-bottom: 14px;">
         <div class="glass-card glass-card-glow stat-card">
             <div class="flex-between">
@@ -186,7 +172,9 @@
         </div>
     </section>
     
+    <!-- ========================================== -->
     <!-- الرسوم البيانية -->
+    <!-- ========================================== -->
     <section class="grid grid-2" style="margin-bottom: 14px;">
         <div class="glass-card">
             <h3 style="margin-bottom: 8px; font-size: 14px;">📈 تحليل الهجمات</h3>
@@ -203,7 +191,9 @@
         </div>
     </section>
     
+    <!-- ========================================== -->
     <!-- أحدث التهديدات -->
+    <!-- ========================================== -->
     <section class="glass-card" style="margin-bottom: 14px;">
         <div class="flex-between" style="margin-bottom: 8px;">
             <h3 style="font-size: 14px;">⚠️ أحدث التهديدات</h3>
@@ -228,7 +218,9 @@
         </div>
     </section>
     
+    <!-- ========================================== -->
     <!-- الحوادث الأخيرة -->
+    <!-- ========================================== -->
     <section class="glass-card">
         <div class="flex-between" style="margin-bottom: 8px;">
             <h3 style="font-size: 14px;">🚨 آخر الحوادث</h3>
@@ -252,16 +244,23 @@
         </div>
     </section>
     
+    <!-- ========================================== -->
     <!-- تذييل -->
+    <!-- ========================================== -->
     <footer style="margin-top: 24px; padding: 10px; text-align: center; color: #64748b; font-size: 12px;">
         <p>🛡️ CyberSOC Dashboard v1.0.0 | جميع الحقوق محفوظة © 2026</p>
     </footer>
 </main>
 
+<!-- ========================================== -->
+<!-- JavaScript -->
+<!-- ========================================== -->
 <script src="assets/js/main.js"></script>
 
 <script>
-// ساعة
+// ==========================================
+// الساعة
+// ==========================================
 function updateClock() {
     var clock = document.getElementById('clock');
     if (!clock) return;
@@ -277,7 +276,182 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+// ==========================================
+// تبديل اللغة
+// ==========================================
+function toggleLanguage() {
+    var current = document.documentElement.lang;
+    var next = current === 'ar' ? 'en' : 'ar';
+    document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = next;
+    localStorage.setItem('soc_language', next);
+    
+    var btn = document.querySelector('.lang-toggle');
+    if (btn) {
+        btn.textContent = next === 'ar' ? '🇬🇧 EN' : '🇸🇦 عربي';
+    }
+}
+
+// ==========================================
+// تسجيل الخروج
+// ==========================================
+function logout() {
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        sessionStorage.removeItem('loggedIn');
+        sessionStorage.removeItem('username');
+        sessionStorage.removeItem('userRole');
+        sessionStorage.removeItem('userName');
+        window.location.href = 'login.html';
+    }
+}
+
+// ==========================================
+// القائمة الجانبية (Sidebar)
+// ==========================================
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+    }
+    if (overlay) {
+        overlay.classList.toggle('active');
+    }
+    
+    // منع تمرير الصفحة عند فتح القائمة
+    if (sidebar && sidebar.classList.contains('open')) {
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+    } else {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+    }
+}
+
+function closeSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    
+    if (sidebar) {
+        sidebar.classList.remove('open');
+    }
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+}
+
+// ==========================================
 // الرسوم البيانية
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+    // إخفاء شاشة التحميل
+    var loading = document.getElementById('loading-screen');
+    if (loading) {
+        setTimeout(function() {
+            loading.classList.add('hide');
+        }, 500);
+    }
+    
+    // اسم المستخدم
+    var userName = sessionStorage.getItem('userName') || 'مدير النظام';
+    var userRole = sessionStorage.getItem('userRole') || 'Admin';
+    var nameEl = document.getElementById('userName');
+    var roleEl = document.getElementById('userRole');
+    if (nameEl) nameEl.textContent = userName;
+    if (roleEl) roleEl.textContent = userRole;
+    
+    // تحديث الإحصائيات
+    document.getElementById('total-threats').textContent = '55';
+    document.getElementById('critical-threats').textContent = '8';
+    document.getElementById('total-incidents').textContent = '23';
+    document.getElementById('active-incidents').textContent = '5';
+    
+    // تحديث جداول التهديدات والحوادث
+    updateThreatsTable();
+    updateIncidentsTable();
+    
+    // إغلاق القائمة عند النقر على الروابط
+    var navLinks = document.querySelectorAll('.sidebar .nav-link');
+    navLinks.forEach(function(link) {
+        link.addEventListener('click', function() {
+            closeSidebar();
+        });
+    });
+    
+    // إغلاق القائمة عند تغيير حجم الشاشة
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 992) {
+            closeSidebar();
+        }
+    });
+});
+
+// ==========================================
+// تحديث جدول التهديدات
+// ==========================================
+function updateThreatsTable() {
+    var tbody = document.querySelector('#threats-table tbody');
+    if (!tbody) return;
+    
+    var data = [
+        { name: 'هجوم DDoS متقدم', type: 'DDoS', severity: 'critical', source: '192.168.1.100', status: 'active', time: '2026-01-21 14:30' },
+        { name: 'محاولة حقن SQL', type: 'SQL Injection', severity: 'high', source: '45.33.22.11', status: 'investigating', time: '2026-01-21 13:15' },
+        { name: 'برمجية فدية WannaCry', type: 'Ransomware', severity: 'critical', source: '192.168.5.50', status: 'active', time: '2026-01-21 12:00' },
+        { name: 'حملة تصيد احتيالي', type: 'Phishing', severity: 'medium', source: '203.0.113.45', status: 'investigating', time: '2026-01-21 11:20' },
+        { name: 'محاولات Brute Force SSH', type: 'Brute Force', severity: 'high', source: '198.51.100.67', status: 'resolved', time: '2026-01-21 10:45' }
+    ];
+    
+    var html = '';
+    data.forEach(function(t) {
+        html += '<tr>' +
+            '<td>' + t.name + '</td>' +
+            '<td>' + t.type + '</td>' +
+            '<td><span class="badge badge-' + t.severity + '">' + t.severity + '</span></td>' +
+            '<td>' + t.source + '</td>' +
+            '<td><span class="badge badge-' + t.status + '">' + t.status + '</span></td>' +
+            '<td>' + t.time + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+}
+
+// ==========================================
+// تحديث جدول الحوادث
+// ==========================================
+function updateIncidentsTable() {
+    var tbody = document.querySelector('#incidents-table tbody');
+    if (!tbody) return;
+    
+    var data = [
+        { id: 'INC-2026-001', title: 'هجوم DDoS على خوادم الويب', priority: 'critical', status: 'new', time: '2026-01-21 14:30' },
+        { id: 'INC-2026-002', title: 'محاولة حقن SQL في قاعدة البيانات', priority: 'high', status: 'investigating', time: '2026-01-21 13:15' },
+        { id: 'INC-2026-003', title: 'انتشار برمجية فدية على الشبكة', priority: 'critical', status: 'new', time: '2026-01-21 12:00' },
+        { id: 'INC-2026-004', title: 'محاولات اختراق SSH متكررة', priority: 'high', status: 'resolved', time: '2026-01-21 10:45' },
+        { id: 'INC-2026-005', title: 'ثغرة في تطبيق CRM', priority: 'medium', status: 'investigating', time: '2026-01-21 09:30' }
+    ];
+    
+    var html = '';
+    data.forEach(function(t) {
+        html += '<tr>' +
+            '<td>' + t.id + '</td>' +
+            '<td>' + t.title + '</td>' +
+            '<td><span class="badge badge-' + t.priority + '">' + t.priority + '</span></td>' +
+            '<td><span class="badge badge-' + t.status + '">' + t.status + '</span></td>' +
+            '<td>' + t.time + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+}
+
+// ==========================================
+// الرسوم البيانية (Chart.js)
+// ==========================================
 document.addEventListener('DOMContentLoaded', function() {
     // رسم بياني للهجمات
     var attacksCtx = document.getElementById('attacksChart')?.getContext('2d');
@@ -347,89 +521,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // تحديث الإحصائيات
-    document.getElementById('total-threats').textContent = '55';
-    document.getElementById('critical-threats').textContent = '8';
-    document.getElementById('total-incidents').textContent = '23';
-    document.getElementById('active-incidents').textContent = '5';
-});
-</script>
-<script>
-// ==========================================
-// تسجيل الخروج
-// ==========================================
-function logout() {
-    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        sessionStorage.removeItem('loggedIn');
-        sessionStorage.removeItem('username');
-        sessionStorage.removeItem('userRole');
-        sessionStorage.removeItem('userName');
-        window.location.href = 'login.html';
-    }
-}
-</script>
-    <script>
-<script>
-// ==========================================
-// تبديل القائمة الجانبية - حل مضمون للجوال
-// ==========================================
-
-function toggleSidebar() {
-    var sidebar = document.getElementById('sidebar');
-    var overlay = document.getElementById('sidebarOverlay');
-    
-    if (sidebar) {
-        sidebar.classList.toggle('open');
-    }
-    if (overlay) {
-        overlay.classList.toggle('active');
-    }
-    
-    // منع تمرير الصفحة عند فتح القائمة
-    if (sidebar && sidebar.classList.contains('open')) {
-        document.body.style.overflow = 'hidden';
-    } else {
-        document.body.style.overflow = '';
-    }
-}
-
-function closeSidebar() {
-    var sidebar = document.getElementById('sidebar');
-    var overlay = document.getElementById('sidebarOverlay');
-    
-    if (sidebar) {
-        sidebar.classList.remove('open');
-    }
-    if (overlay) {
-        overlay.classList.remove('active');
-    }
-    document.body.style.overflow = '';
-}
-
-// تشغيل عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    // إغلاق القائمة عند النقر على الروابط
-    var navLinks = document.querySelectorAll('.sidebar .nav-link');
-    navLinks.forEach(function(link) {
-        link.addEventListener('click', function() {
-            closeSidebar();
-        });
-    });
-    
-    // إغلاق القائمة عند الضغط على زر الرجوع
-    window.addEventListener('popstate', function() {
-        closeSidebar();
-    });
 });
 
-// تأكد من أن الدوال متاحة عالمياً
+// جعل الدوال متاحة عالمياً
 window.toggleSidebar = toggleSidebar;
 window.closeSidebar = closeSidebar;
+window.toggleLanguage = toggleLanguage;
+window.logout = logout;
 
-console.log('✅ القائمة الجانبية جاهزة!');
+console.log('✅ CyberSOC Dashboard loaded successfully!');
 </script>
-
 
 </body>
 </html>
