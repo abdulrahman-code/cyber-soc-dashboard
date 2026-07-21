@@ -1,81 +1,167 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="dark">
+<html lang="ar" dir="rtl">
 <head>
-    <link rel="stylesheet" href="assets/css/style.css">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberSOC Dashboard - الإعدادات</title>
-    <meta name="description" content="إعدادات النظام وتخصيص المنصة">
+    <title>CyberSOC - الإعدادات</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    
+    <style>
+        /* نفس التنسيقات السابقة */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0a0e1a; color: #f1f5f9; min-height: 100vh; overflow-x: hidden; }
+        
+        .sidebar {
+            position: fixed; top: 0; right: 0; width: 240px; height: 100vh;
+            background: #111827; padding: 20px 16px; overflow-y: auto;
+            z-index: 1000; border-left: 1px solid #1e293b;
+            transition: right 0.3s ease;
+        }
+        @media (max-width: 992px) {
+            .sidebar { right: -280px; width: 260px; }
+            .sidebar.open { right: 0; }
+        }
+        
+        .sidebar .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; padding: 4px 8px; }
+        .sidebar .logo-icon { font-size: 28px; }
+        .sidebar .logo-text { font-size: 20px; font-weight: 700; color: #00f0ff; }
+        .sidebar .nav-menu { list-style: none; }
+        .sidebar .nav-item { margin-bottom: 2px; }
+        .sidebar .nav-link {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            border-radius: 8px; color: #94a3b8; text-decoration: none;
+            transition: 0.3s; font-size: 14px;
+        }
+        .sidebar .nav-link:hover { background: rgba(0,240,255,0.08); color: #f1f5f9; }
+        .sidebar .nav-link.active { background: rgba(0,240,255,0.12); color: #00f0ff; }
+        .sidebar .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid #1e293b; }
+        .user-info { display: flex; align-items: center; gap: 10px; padding: 4px 8px; }
+        .user-avatar { font-size: 20px; }
+        .user-name { font-size: 13px; font-weight: 600; }
+        .user-role { font-size: 11px; color: #64748b; }
+        
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; }
+        .sidebar-overlay.active { display: block; }
+        @media (min-width: 993px) { .sidebar-overlay { display: none !important; } }
+        
+        .main-content { margin-right: 240px; padding: 16px 20px; min-height: 100vh; transition: margin-right 0.3s ease; }
+        @media (max-width: 992px) { .main-content { margin-right: 0; padding: 12px 14px; } }
+        
+        .menu-toggle { display: none; background: none; border: none; color: #f1f5f9; font-size: 24px; cursor: pointer; padding: 4px 8px; }
+        .menu-toggle:hover { color: #00f0ff; }
+        @media (max-width: 992px) { .menu-toggle { display: block; } }
+        
+        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #1e293b; border-radius: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+        .topbar-left { display: flex; align-items: center; gap: 10px; }
+        .page-title { font-size: 18px; font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        #clock { font-size: 13px; color: #94a3b8; }
+        
+        .btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.3s; text-decoration: none; }
+        .btn-outline { background: transparent; border: 1px solid #334155; color: #f1f5f9; }
+        .btn-outline:hover { border-color: #00f0ff; color: #00f0ff; }
+        .btn-primary { background: #00f0ff; color: #0a0e1a; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,240,255,0.3); }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(239,68,68,0.3); }
+        .btn-sm { padding: 3px 10px; font-size: 11px; }
+        
+        .lang-toggle { background: rgba(255,255,255,0.05); border: 1px solid #334155; color: #f1f5f9; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.3s; }
+        .lang-toggle:hover { background: rgba(0,240,255,0.08); border-color: #00f0ff; }
+        
+        .glass-card { background: #1e293b; border-radius: 12px; padding: 16px; border: 1px solid #334155; transition: 0.3s; }
+        .glass-card:hover { border-color: #00f0ff; transform: translateY(-2px); }
+        .grid { display: grid; gap: 12px; margin-bottom: 12px; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .stat-card { min-height: 70px; }
+        .stat-number { font-size: 24px; font-weight: 700; color: #00f0ff; }
+        .stat-label { font-size: 12px; color: #94a3b8; }
+        .flex-between { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+        .text-center { text-align: center; }
+        
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; color: #94a3b8; font-size: 11px; margin-bottom: 3px; }
+        .form-control { width: 100%; padding: 8px 12px; background: rgba(10,14,26,0.6); border: 1px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 12px; }
+        .form-control:focus { outline: none; border-color: #00f0ff; }
+        
+        .table-container { overflow-x: auto; background: rgba(30,41,59,0.5); border-radius: 12px; border: 1px solid #334155; }
+        .table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .table th { padding: 8px 12px; text-align: right; color: #94a3b8; border-bottom: 1px solid #334155; font-weight: 600; font-size: 11px; }
+        .table td { padding: 6px 12px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .table tbody tr:hover { background: rgba(0,240,255,0.03); }
+        
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 600; }
+        .badge-critical { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .badge-high { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .badge-low { background: rgba(16,185,129,0.2); color: #10b981; }
+        .badge-active { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .badge-resolved { background: rgba(16,185,129,0.2); color: #10b981; }
+        
+        #loading-screen { position: fixed; inset: 0; background: #0a0e1a; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
+        #loading-screen.hide { opacity: 0; pointer-events: none; }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid rgba(0,240,255,0.1); border-top-color: #00f0ff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { margin-top: 12px; color: #94a3b8; font-size: 13px; }
+        
+        footer { margin-top: 20px; padding: 12px; text-align: center; color: #64748b; font-size: 11px; border-top: 1px solid #1e293b; }
+        
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .stat-number { font-size: 20px; }
+            .topbar { padding: 8px 12px; }
+            .page-title { font-size: 15px; }
+            .glass-card { padding: 12px; }
+            .table th, .table td { padding: 4px 8px; font-size: 10px; }
+        }
+        @media (max-width: 576px) {
+            .stat-number { font-size: 18px; }
+            .topbar-right { gap: 4px; }
+            .lang-toggle { font-size: 10px; padding: 2px 8px; }
+            #clock { font-size: 11px; }
+            .btn { font-size: 10px; padding: 2px 8px; }
+        }
+        
+        [data-theme="light"] body { background: #f0f4ff; color: #0f172a; }
+        [data-theme="light"] .sidebar { background: #ffffff; border-left-color: #e2e8f0; }
+        [data-theme="light"] .glass-card { background: #ffffff; border-color: #e2e8f0; }
+        [data-theme="light"] .topbar { background: #ffffff; }
+        [data-theme="light"] .stat-number { color: #4f46e5; }
+        [data-theme="light"] .btn-outline { border-color: #e2e8f0; color: #0f172a; }
+        [data-theme="light"] .lang-toggle { border-color: #e2e8f0; color: #0f172a; }
+        [data-theme="light"] .form-control { background: #f8fafc; color: #0f172a; border-color: #e2e8f0; }
+        [data-theme="light"] .table-container { background: #ffffff; }
+    </style>
 </head>
 <body>
 
-<!-- ====================================================== -->
+<!-- ========================================== -->
 <!-- شاشة التحميل -->
-<!-- ====================================================== -->
+<!-- ========================================== -->
 <div id="loading-screen">
     <div class="loading-spinner"></div>
     <div class="loading-text">🛡️ جاري تحميل المنصة...</div>
 </div>
 
-<script>
-// ==========================================
-// التحقق من تسجيل الدخول
-// ==========================================
-(function() {
-    var loggedIn = sessionStorage.getItem('loggedIn');
-    if (!loggedIn || loggedIn !== 'true') {
-        window.location.href = 'login.html';
-    }
-})();
-</script>
-<!-- ====================================================== -->
-<!-- الشريط الجانبي -->
-<!-- ====================================================== -->
+<!-- ========================================== -->
+<!-- السايدبار -->
+<!-- ========================================== -->
 <aside class="sidebar" id="sidebar">
     <div class="logo">
         <span class="logo-icon">🛡️</span>
         <span class="logo-text">CyberSOC</span>
     </div>
-    
     <nav>
         <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="index.html" class="nav-link">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-text" data-translate="dashboard">لوحة التحكم</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="threats.html" class="nav-link">
-                    <span class="nav-icon">⚠️</span>
-                    <span class="nav-text" data-translate="threats">التهديدات</span>
-                    <span class="nav-badge" id="threat-badge">12</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="incidents.html" class="nav-link">
-                    <span class="nav-icon">🚨</span>
-                    <span class="nav-text" data-translate="incidents">الحوادث</span>
-                    <span class="nav-badge" id="incident-badge">5</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="about.html" class="nav-link">
-                    <span class="nav-icon">ℹ️</span>
-                    <span class="nav-text">من نحن</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="settings.html" class="nav-link active">
-                    <span class="nav-icon">⚙️</span>
-                    <span class="nav-text" data-translate="settings">الإعدادات</span>
-                </a>
-            </li>
+            <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span><span class="nav-text">لوحة التحكم</span></a></li>
+            <li class="nav-item"><a href="threats.html" class="nav-link"><span class="nav-icon">⚠️</span><span class="nav-text">التهديدات</span><span class="nav-badge">12</span></a></li>
+            <li class="nav-item"><a href="incidents.html" class="nav-link"><span class="nav-icon">🚨</span><span class="nav-text">الحوادث</span><span class="nav-badge">5</span></a></li>
+            <li class="nav-item"><a href="about.html" class="nav-link"><span class="nav-icon">ℹ️</span><span class="nav-text">من نحن</span></a></li>
+            <li class="nav-item"><a href="settings.html" class="nav-link active"><span class="nav-icon">⚙️</span><span class="nav-text">الإعدادات</span></a></li>
         </ul>
     </nav>
-    
     <div class="sidebar-footer">
         <div class="user-info">
             <span class="user-avatar">👤</span>
@@ -87,366 +173,233 @@
     </div>
 </aside>
 
-<!-- ====================================================== -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ========================================== -->
 <!-- المحتوى الرئيسي -->
-<!-- ====================================================== -->
+<!-- ========================================== -->
 <main class="main-content" id="main-content">
     
-    <!-- الشريط العلوي -->
     <header class="topbar">
         <div class="topbar-left">
-            <button class="menu-toggle" onclick="toggleSidebar()" aria-label="تبديل القائمة">
-        ☰
-    </button>
-            <h1 class="page-title" data-translate="settings">الإعدادات</h1>
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+            <h1 class="page-title">الإعدادات</h1>
         </div>
-        
         <div class="topbar-right">
-            <span id="clock" style="font-size:14px; color:var(--text-secondary); font-weight:500;">--:--:--</span>
-            <button class="lang-toggle" aria-label="تبديل اللغة">🇬🇧 EN</button>
-            <button class="theme-toggle" aria-label="تبديل الثيم">🌙</button>
-            <div class="notification-badge">
-                <span style="font-size:22px;">🔔</span>
-                <span class="badge-count" id="notif-count">3</span>
-            </div>
+            <span id="clock">--:--:--</span>
+            <button class="lang-toggle" onclick="toggleLanguage()">🇬🇧 EN</button>
+            <button class="btn btn-outline btn-sm" onclick="logout()">🚪 خروج</button>
         </div>
     </header>
     
-    <!-- إعدادات النظام -->
-    <section class="grid grid-2" style="margin-bottom: var(--spacing-lg);">
-        <!-- إعدادات عامة -->
+    <!-- إعدادات عامة -->
+    <section class="grid grid-2">
         <div class="glass-card">
-            <h3 style="margin-bottom: var(--spacing-lg);">⚙️ الإعدادات العامة</h3>
-            
+            <h3 style="font-size:16px; margin-bottom:12px;">⚙️ الإعدادات العامة</h3>
             <div class="form-group">
                 <label>اسم المنصة</label>
-                <input type="text" id="siteName" class="form-control" value="CyberSOC Dashboard">
+                <input type="text" class="form-control" value="CyberSOC Dashboard" id="siteName">
             </div>
-            
             <div class="form-group">
                 <label>اللغة الافتراضية</label>
-                <select id="defaultLang" class="form-control">
+                <select class="form-control" id="defaultLang">
                     <option value="ar">العربية</option>
                     <option value="en">English</option>
                 </select>
             </div>
-            
-            <div class="form-group">
-                <label>المنطقة الزمنية</label>
-                <select id="timezone" class="form-control">
-                    <option value="UTC">UTC</option>
-                    <option value="Asia/Riyadh">الرياض (GMT+3)</option>
-                    <option value="Asia/Dubai">دبي (GMT+4)</option>
-                    <option value="Europe/London">لندن (GMT+0)</option>
-                    <option value="America/New_York">نيويورك (GMT-5)</option>
-                </select>
-            </div>
-            
             <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ الإعدادات</button>
         </div>
         
-        <!-- إعدادات الأمان -->
         <div class="glass-card">
-            <h3 style="margin-bottom: var(--spacing-lg);">🔒 إعدادات الأمان</h3>
-            
+            <h3 style="font-size:16px; margin-bottom:12px;">🔒 إعدادات الأمان</h3>
             <div class="form-group">
                 <label>مدة الجلسة (بالدقائق)</label>
-                <input type="number" id="sessionTimeout" class="form-control" value="60" min="5" max="480">
+                <input type="number" class="form-control" value="60" id="sessionTimeout" min="5" max="480">
             </div>
-            
             <div class="form-group">
-                <label>عدد محاولات تسجيل الدخول المسموحة</label>
-                <input type="number" id="maxAttempts" class="form-control" value="5" min="3" max="10">
-            </div>
-            
-            <div class="form-group">
-                <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                    <input type="checkbox" id="twoFactor" checked>
-                    تفعيل المصادقة الثنائية (2FA)
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="twoFactor" checked> تفعيل المصادقة الثنائية
                 </label>
             </div>
-            
-            <div class="form-group">
-                <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                    <input type="checkbox" id="notifyLogin" checked>
-                    إشعار عند تسجيل الدخول من جهاز جديد
-                </label>
-            </div>
-            
             <button class="btn btn-danger" onclick="changePassword()">🔑 تغيير كلمة المرور</button>
         </div>
     </section>
     
     <!-- إعدادات المظهر -->
-    <section class="grid grid-2" style="margin-bottom: var(--spacing-lg);">
-        <div class="glass-card">
-            <h3 style="margin-bottom: var(--spacing-lg);">🎨 إعدادات المظهر</h3>
-            
+    <section class="glass-card">
+        <h3 style="font-size:16px; margin-bottom:12px;">🎨 إعدادات المظهر</h3>
+        <div class="grid grid-2">
             <div class="form-group">
                 <label>الثيم</label>
-                <select id="themeSelect" class="form-control" onchange="applyTheme(this.value)">
+                <select class="form-control" id="themeSelect" onchange="applyTheme(this.value)">
                     <option value="dark">داكن</option>
                     <option value="light">فاتح</option>
-                    <option value="system">حسب النظام</option>
                 </select>
             </div>
-            
-            <div class="form-group">
-                <label>الخلفية الحية</label>
-                <select id="bgSelect" class="form-control" onchange="applyBackground(this.value)">
-                    <option value="matrix">المطر الرقمي</option>
-                    <option value="network">الشبكة</option>
-                    <option value="particles">الجسيمات</option>
-                    <option value="code">سطور الأكواد</option>
-                    <option value="fog">الضباب الإلكتروني</option>
-                </select>
-            </div>
-            
             <div class="form-group">
                 <label>حجم الخط</label>
-                <select id="fontSize" class="form-control">
+                <select class="form-control" id="fontSize">
                     <option value="small">صغير</option>
                     <option value="medium" selected>متوسط</option>
                     <option value="large">كبير</option>
                 </select>
             </div>
         </div>
-        
-        <!-- إعدادات الإشعارات -->
-        <div class="glass-card">
-            <h3 style="margin-bottom: var(--spacing-lg);">🔔 إعدادات الإشعارات</h3>
-            
-            <div class="form-group">
-                <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                    <input type="checkbox" id="notifThreats" checked>
-                    إشعارات التهديدات الجديدة
-                </label>
-            </div>
-            
-            <div class="form-group">
-                <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                    <input type="checkbox" id="notifIncidents" checked>
-                    إشعارات الحوادث الجديدة
-                </label>
-            </div>
-            
-            <div class="form-group">
-                <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                    <input type="checkbox" id="notifSystem" checked>
-                    إشعارات النظام
-                </label>
-            </div>
-            
-            <div class="form-group">
-                <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                    <input type="checkbox" id="notifEmail">
-                    إرسال إشعارات عبر البريد الإلكتروني
-                </label>
-            </div>
-        </div>
     </section>
     
     <!-- إدارة المستخدمين -->
-    <section class="glass-card" style="margin-bottom: var(--spacing-lg);">
-        <div class="flex-between" style="margin-bottom: var(--spacing-lg);">
-            <h3>👥 إدارة المستخدمين</h3>
-            <button class="btn btn-primary" onclick="addUser()">➕ إضافة مستخدم</button>
+    <section class="glass-card">
+        <div class="flex-between" style="margin-bottom:10px;">
+            <h3 style="font-size:16px;">👥 إدارة المستخدمين</h3>
+            <button class="btn btn-primary btn-sm" onclick="alert('👤 سيتم فتح نافذة إضافة مستخدم')">➕ إضافة مستخدم</button>
         </div>
-        
         <div class="table-container">
             <table class="table">
                 <thead>
                     <tr>
                         <th>اسم المستخدم</th>
-                        <th>البريد الإلكتروني</th>
                         <th>الدور</th>
                         <th>الحالة</th>
-                        <th>آخر تسجيل دخول</th>
-                        <th>الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>admin</td>
-                        <td>admin@soc.local</td>
                         <td><span class="badge badge-critical">Admin</span></td>
                         <td><span class="badge badge-active">نشط</span></td>
-                        <td>2026-01-15 14:30:22</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary">✏️</button>
-                            <button class="btn btn-sm btn-danger">🗑️</button>
-                        </td>
                     </tr>
                     <tr>
                         <td>analyst1</td>
-                        <td>analyst1@soc.local</td>
                         <td><span class="badge badge-high">Analyst</span></td>
                         <td><span class="badge badge-active">نشط</span></td>
-                        <td>2026-01-15 13:15:45</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary">✏️</button>
-                            <button class="btn btn-sm btn-danger">🗑️</button>
-                        </td>
                     </tr>
                     <tr>
                         <td>viewer1</td>
-                        <td>viewer1@soc.local</td>
                         <td><span class="badge badge-low">Viewer</span></td>
-                        <td><span class="badge badge-inactive">غير نشط</span></td>
-                        <td>2026-01-14 09:20:10</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary">✏️</button>
-                            <button class="btn btn-sm btn-danger">🗑️</button>
-                        </td>
+                        <td><span class="badge badge-resolved">غير نشط</span></td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </section>
     
-    <!-- سجل النشاطات -->
-    <section class="glass-card" style="margin-bottom: var(--spacing-lg);">
-        <h3 style="margin-bottom: var(--spacing-lg);">📋 سجل النشاطات</h3>
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>المستخدم</th>
-                        <th>الإجراء</th>
-                        <th>التفاصيل</th>
-                        <th>الخطورة</th>
-                        <th>التوقيت</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>admin</td>
-                        <td>تسجيل دخول</td>
-                        <td>تسجيل دخول ناجح من IP 192.168.1.100</td>
-                        <td><span class="badge badge-low">معلومات</span></td>
-                        <td>2026-01-15 14:30:22</td>
-                    </tr>
-                    <tr>
-                        <td>analyst1</td>
-                        <td>تحديث تهديد</td>
-                        <td>تغيير حالة التهديد #1 إلى "نشط"</td>
-                        <td><span class="badge badge-medium">تنبيه</span></td>
-                        <td>2026-01-15 13:15:45</td>
-                    </tr>
-                    <tr>
-                        <td>system</td>
-                        <td>كشف تهديد</td>
-                        <td>تم اكتشاف تهديد جديد: هجوم DDoS</td>
-                        <td><span class="badge badge-critical">حرج</span></td>
-                        <td>2026-01-15 12:00:10</td>
-                    </tr>
-                    <tr>
-                        <td>admin</td>
-                        <td>إنشاء حادث</td>
-                        <td>إنشاء حادث جديد INC-2026-001</td>
-                        <td><span class="badge badge-medium">تنبيه</span></td>
-                        <td>2026-01-15 11:20:33</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-    
-    <!-- تذييل الصفحة -->
-    <footer style="margin-top: var(--spacing-2xl); padding: var(--spacing-md); text-align: center; color: var(--text-muted); font-size: 13px;">
+    <footer>
         <p>🛡️ CyberSOC Dashboard v1.0.0 | جميع الحقوق محفوظة © 2026</p>
-        <p style="margin-top: var(--spacing-xs); font-size: 12px; opacity: 0.6;">نظام مراقبة وتحليل الأمن السيبراني - تعمل بأمان 🔒</p>
     </footer>
 </main>
 
-<script src="assets/js/main.js"></script>
-
+<!-- ========================================== -->
+<!-- JavaScript -->
+<!-- ========================================== -->
 <script>
-// ساعة رقمية
 function updateClock() {
-    const now = new Date();
-    const time = now.toLocaleTimeString('ar-SA', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    document.getElementById('clock').textContent = '🕐 ' + time;
+    var clock = document.getElementById('clock');
+    if (!clock) return;
+    var now = new Date();
+    var time = now.toLocaleTimeString('ar-SA', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    clock.textContent = '🕐 ' + time;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// حفظ الإعدادات
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        var loading = document.getElementById('loading-screen');
+        if (loading) loading.classList.add('hide');
+    }, 500);
+});
+
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    if (window.innerWidth <= 992) {
+        if (sidebar) sidebar.classList.toggle('open');
+        if (overlay) overlay.classList.toggle('active');
+    }
+}
+function closeSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+}
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 992) closeSidebar();
+});
+
+function toggleLanguage() {
+    var current = document.documentElement.lang;
+    var next = current === 'ar' ? 'en' : 'ar';
+    document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = next;
+    var btn = document.querySelector('.lang-toggle');
+    if (btn) btn.textContent = next === 'ar' ? '🇬🇧 EN' : '🇸🇦 عربي';
+}
+
+function logout() {
+    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        sessionStorage.clear();
+        window.location.href = 'login.html';
+    }
+}
+
 function saveSettings() {
-    const settings = {
+    var settings = {
         siteName: document.getElementById('siteName').value,
         defaultLang: document.getElementById('defaultLang').value,
-        timezone: document.getElementById('timezone').value,
         sessionTimeout: document.getElementById('sessionTimeout').value,
-        maxAttempts: document.getElementById('maxAttempts').value,
-        twoFactor: document.getElementById('twoFactor').checked,
-        notifyLogin: document.getElementById('notifyLogin').checked,
+        twoFactor: document.getElementById('twoFactor').checked
     };
-    
     localStorage.setItem('soc_settings', JSON.stringify(settings));
     alert('✅ تم حفظ الإعدادات بنجاح!');
 }
 
-// تغيير كلمة المرور
 function changePassword() {
-    const newPass = prompt('🔑 أدخل كلمة المرور الجديدة:');
-    if (newPass && newPass.length >= 8) {
+    var newPass = prompt('🔑 أدخل كلمة المرور الجديدة (6 أحرف على الأقل):');
+    if (newPass && newPass.length >= 6) {
         alert('✅ تم تغيير كلمة المرور بنجاح!');
     } else if (newPass) {
-        alert('⚠️ كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+        alert('⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
     }
 }
 
-// تطبيق الثيم
 function applyTheme(theme) {
-    if (theme === 'system') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-    } else {
-        document.documentElement.setAttribute('data-theme', theme);
-    }
+    document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('soc_theme', theme);
 }
 
-// تطبيق الخلفية
-function applyBackground(bg) {
-    localStorage.setItem('soc_background', bg);
-    // سيتم تطبيقها بواسطة BackgroundManager في main.js
-    alert(`🔄 تم تغيير الخلفية إلى: ${bg}`);
-}
-
-// إضافة مستخدم
-function addUser() {
-    alert('👤 سيتم فتح نافذة إضافة مستخدم جديد');
-}
-
-// تحميل الإعدادات المحفوظة
 document.addEventListener('DOMContentLoaded', function() {
-    const saved = localStorage.getItem('soc_settings');
+    var saved = localStorage.getItem('soc_settings');
     if (saved) {
         try {
-            const settings = JSON.parse(saved);
-            document.getElementById('siteName').value = settings.siteName || 'CyberSOC Dashboard';
-            document.getElementById('defaultLang').value = settings.defaultLang || 'ar';
-            document.getElementById('timezone').value = settings.timezone || 'UTC';
-            document.getElementById('sessionTimeout').value = settings.sessionTimeout || 60;
-            document.getElementById('maxAttempts').value = settings.maxAttempts || 5;
-            document.getElementById('twoFactor').checked = settings.twoFactor !== false;
-            document.getElementById('notifyLogin').checked = settings.notifyLogin !== false;
+            var settings = JSON.parse(saved);
+            if (document.getElementById('siteName')) document.getElementById('siteName').value = settings.siteName || 'CyberSOC Dashboard';
+            if (document.getElementById('defaultLang')) document.getElementById('defaultLang').value = settings.defaultLang || 'ar';
+            if (document.getElementById('sessionTimeout')) document.getElementById('sessionTimeout').value = settings.sessionTimeout || 60;
+            if (document.getElementById('twoFactor')) document.getElementById('twoFactor').checked = settings.twoFactor !== false;
         } catch(e) {}
     }
     
-    // تحميل الثيم المحفوظ
-    const savedTheme = localStorage.getItem('soc_theme') || 'dark';
-    document.getElementById('themeSelect').value = savedTheme;
-    applyTheme(savedTheme);
+    var savedTheme = localStorage.getItem('soc_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (document.getElementById('themeSelect')) {
+        document.getElementById('themeSelect').value = savedTheme;
+    }
     
-    // تحميل الخلفية المحفوظة
-    const savedBg = localStorage.getItem('soc_background') || 'matrix';
-    document.getElementById('bgSelect').value = savedBg;
-    
-    document.getElementById('notif-count').textContent = '3';
+    var links = document.querySelectorAll('.sidebar .nav-link');
+    links.forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 992) closeSidebar();
+        });
+    });
 });
+
+console.log('✅ Settings page ready!');
 </script>
 
 </body>
