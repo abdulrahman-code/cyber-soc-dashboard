@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب - CyberSOC</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <style>
+        .register-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0e1a;
+            padding: 20px;
+        }
+        
+        .register-container {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 420px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        }
+        
+        .register-container h2 {
+            text-align: center;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+        
+        .register-container .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        
+        .form-group .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(10, 14, 26, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            color: #f1f5f9;
+            font-size: 14px;
+        }
+        
+        .form-group .form-control:focus {
+            outline: none;
+            border-color: #00f0ff;
+        }
+        
+        .btn-register {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #00f0ff, #4f46e5);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 40px rgba(0, 240, 255, 0.3);
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 16px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        .login-link a {
+            color: #00f0ff;
+            text-decoration: none;
+        }
+        
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .register-error {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+        
+        .register-success {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+        
+        @media (max-width: 576px) {
+            .register-container {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="register-page">
+    <div class="register-container">
+        <!-- الشعار -->
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 40px;">🛡️</span>
+            <h2 style="font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #00f0ff, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; margin-right: 8px;">CyberSOC</h2>
+        </div>
+        
+        <h2>إنشاء حساب جديد</h2>
+        <p class="subtitle">سجل للحصول على صلاحية الوصول إلى لوحة التحكم</p>
+        
+        <!-- نموذج التسجيل -->
+        <form id="registerForm" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>👤 اسم المستخدم</label>
+                <input type="text" id="regUsername" class="form-control" placeholder="أدخل اسم المستخدم" required>
+            </div>
+            
+            <div class="form-group">
+                <label>📧 البريد الإلكتروني</label>
+                <input type="email" id="regEmail" class="form-control" placeholder="example@domain.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label>🔒 كلمة المرور</label>
+                <input type="password" id="regPassword" class="form-control" placeholder="أدخل كلمة المرور" required minlength="6">
+            </div>
+            
+            <div class="form-group">
+                <label>🔒 تأكيد كلمة المرور</label>
+                <input type="password" id="regConfirmPassword" class="form-control" placeholder="أعد إدخال كلمة المرور" required>
+            </div>
+            
+            <div class="register-error" id="registerError"></div>
+            <div class="register-success" id="registerSuccess">✅ تم إنشاء الحساب بنجاح! جاري التوجيه...</div>
+            
+            <button type="submit" class="btn-register">🚀 إنشاء حساب</button>
+        </form>
+        
+        <div class="login-link">
+            لديك حساب بالفعل؟ <a href="login.html">تسجيل الدخول</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function handleRegister(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('regUsername').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+    const errorDiv = document.getElementById('registerError');
+    const successDiv = document.getElementById('registerSuccess');
+    
+    // إخفاء الرسائل السابقة
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+    
+    // التحقق من صحة البيانات
+    if (username.length < 3) {
+        errorDiv.textContent = '⚠️ اسم المستخدم يجب أن يكون 3 أحرف على الأقل';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    if (!email.includes('@') || !email.includes('.')) {
+        errorDiv.textContent = '⚠️ الرجاء إدخال بريد إلكتروني صحيح';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    if (password.length < 6) {
+        errorDiv.textContent = '⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        errorDiv.textContent = '⚠️ كلمة المرور غير متطابقة مع تأكيدها';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // حفظ المستخدم في localStorage (محاكاة)
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    
+    if (users[username]) {
+        errorDiv.textContent = '⚠️ اسم المستخدم موجود بالفعل';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // إضافة المستخدم الجديد
+    users[username] = {
+        email: email,
+        password: password,
+        role: 'viewer',
+        created_at: new Date().toISOString()
+    };
+    
+    localStorage.setItem('registeredUsers', JSON.stringify(users));
+    
+    // عرض رسالة نجاح
+    successDiv.style.display = 'block';
+    
+    // توجيه المستخدم إلى صفحة تسجيل الدخول بعد 2 ثانية
+    setTimeout(() => {
+        window.location.href = 'login.html';
+    }, 2000);
+}
+</script>
+
+</body>
+</html>
