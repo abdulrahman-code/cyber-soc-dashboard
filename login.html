@@ -1199,6 +1199,49 @@
         
         document.getElementById('username').focus();
     }
+    function handleLogin(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const errorDiv = document.getElementById('loginError');
+    
+    // المستخدمين المدمجين
+    const defaultUsers = {
+        'admin': { password: 'admin', role: 'admin', name: 'مدير النظام' },
+        'analyst1': { password: 'admin', role: 'analyst', name: 'محلل أمني أول' },
+        'viewer1': { password: 'admin', role: 'viewer', name: 'مشاهد' }
+    };
+    
+    // تحميل المستخدمين المسجلين
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    
+    // دمج المستخدمين
+    const allUsers = { ...defaultUsers };
+    
+    // إضافة المستخدمين المسجلين
+    for (const [key, value] of Object.entries(registeredUsers)) {
+        allUsers[key] = {
+            password: value.password,
+            role: value.role || 'viewer',
+            name: key
+        };
+    }
+    
+    // التحقق من المستخدم
+    if (allUsers[username] && allUsers[username].password === password) {
+        sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('username', username);
+        sessionStorage.setItem('userRole', allUsers[username].role);
+        sessionStorage.setItem('userName', allUsers[username].name);
+        
+        errorDiv.style.display = 'none';
+        window.location.href = 'index.html';
+    } else {
+        errorDiv.textContent = '⚠️ اسم المستخدم أو كلمة المرور غير صحيحة';
+        errorDiv.style.display = 'block';
+    }
+}
     
     // ==========================================
     // استعادة اللغة والمستخدم المحفوظ
