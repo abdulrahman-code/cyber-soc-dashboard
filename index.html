@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CyberSOC - لوحة التحكم</title>
     
+    <!-- إضافة Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
     <style>
         /* ==========================================
            التنسيقات الأساسية
@@ -466,6 +469,20 @@
         }
         
         /* ==========================================
+           حاوية الرسوم البيانية
+           ========================================== */
+        .chart-container {
+            position: relative;
+            height: 220px;
+            width: 100%;
+        }
+        
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        /* ==========================================
            الاستجابة للجوال
            ========================================== */
         @media (max-width: 768px) {
@@ -478,6 +495,9 @@
             .glass-card { padding: 12px; }
             .table th, .table td { padding: 4px 8px; font-size: 10px; }
             .badge { font-size: 8px; padding: 1px 6px; }
+            .chart-container {
+                height: 180px;
+            }
         }
         
         @media (max-width: 576px) {
@@ -487,6 +507,9 @@
             .lang-toggle { font-size: 10px; padding: 2px 8px; }
             #clock { font-size: 11px; }
             .btn { font-size: 10px; padding: 2px 8px; }
+            .chart-container {
+                height: 150px;
+            }
         }
         
         /* ==========================================
@@ -632,18 +655,27 @@
         </div>
     </section>
     
-    <!-- الرسوم البيانية -->
+    <!-- ========================================== -->
+    <!-- الرسوم البيانية - نسخة محسنة -->
+    <!-- ========================================== -->
     <section class="grid grid-2">
         <div class="glass-card">
-            <h3 style="font-size:14px; margin-bottom:8px;">📈 تحليل الهجمات</h3>
-            <div style="height:180px; width:100%; background:rgba(255,255,255,0.02); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:13px;">
-                📊 الرسم البياني هنا
+            <div class="flex-between" style="margin-bottom:10px;">
+                <h3 style="font-size:14px;">📈 تحليل الهجمات خلال 24 ساعة</h3>
+                <span style="font-size:11px; color:#64748b;" id="lastUpdate1">آخر تحديث: الآن</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="attacksChart"></canvas>
             </div>
         </div>
+        
         <div class="glass-card">
-            <h3 style="font-size:14px; margin-bottom:8px;">🎯 توزيع التهديدات</h3>
-            <div style="height:180px; width:100%; background:rgba(255,255,255,0.02); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:13px;">
-                📊 الرسم البياني هنا
+            <div class="flex-between" style="margin-bottom:10px;">
+                <h3 style="font-size:14px;">🎯 توزيع التهديدات حسب الخطورة</h3>
+                <span style="font-size:11px; color:#64748b;" id="lastUpdate2">55 تهديد</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="severityChart"></canvas>
             </div>
         </div>
     </section>
@@ -854,6 +886,218 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+});
+
+// ==========================================
+// الرسوم البيانية - نسخة محسنة
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📊 بدء تحميل الرسوم البيانية...');
+    
+    // إعدادات عامة للرسوم البيانية
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = 'Segoe UI, Tahoma, sans-serif';
+    
+    // ==========================================
+    // 1. رسم بياني للهجمات (خطي مع تدرج)
+    // ==========================================
+    var attacksCanvas = document.getElementById('attacksChart');
+    if (attacksCanvas) {
+        var attacksCtx = attacksCanvas.getContext('2d');
+        
+        // إنشاء تدرج لوني
+        var gradient = attacksCtx.createLinearGradient(0, 0, 0, 220);
+        gradient.addColorStop(0, 'rgba(0, 240, 255, 0.3)');
+        gradient.addColorStop(0.5, 'rgba(0, 240, 255, 0.1)');
+        gradient.addColorStop(1, 'rgba(0, 240, 255, 0.02)');
+        
+        var attacksData = {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
+            datasets: [{
+                label: 'عدد الهجمات',
+                data: [12, 8, 45, 67, 34, 56, 23],
+                borderColor: '#00f0ff',
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#00f0ff',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: '#ffffff',
+                pointHoverBorderColor: '#00f0ff',
+                pointHoverBorderWidth: 3,
+                borderWidth: 3,
+            }]
+        };
+        
+        var attacksOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#94a3b8',
+                        font: {
+                            size: 11,
+                            weight: '500'
+                        },
+                        padding: 15,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#94a3b8',
+                    borderColor: 'rgba(0, 240, 255, 0.2)',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 8,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            return 'الهجمات: ' + context.parsed.y;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: {
+                            size: 9
+                        },
+                        stepSize: 20,
+                        callback: function(value) {
+                            return value + '';
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.03)',
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: {
+                            size: 9
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            }
+        };
+        
+        try {
+            new Chart(attacksCtx, {
+                type: 'line',
+                data: attacksData,
+                options: attacksOptions
+            });
+            console.log('✅ تم تحميل رسم الهجمات');
+        } catch (e) {
+            console.error('❌ خطأ في رسم الهجمات:', e);
+        }
+    }
+    
+    // ==========================================
+    // 2. رسم بياني للخطورة (دائري مع تأثيرات)
+    // ==========================================
+    var severityCanvas = document.getElementById('severityChart');
+    if (severityCanvas) {
+        var severityCtx = severityCanvas.getContext('2d');
+        
+        // بيانات الخطورة
+        var severityLabels = ['حرجة', 'عالية', 'متوسطة', 'منخفضة'];
+        var severityValues = [8, 15, 22, 10];
+        var severityColors = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'];
+        
+        var severityData = {
+            labels: severityLabels,
+            datasets: [{
+                data: severityValues,
+                backgroundColor: severityColors,
+                borderColor: '#1e293b',
+                borderWidth: 3,
+                hoverOffset: 15,
+                hoverBorderColor: '#ffffff',
+                hoverBorderWidth: 2,
+            }]
+        };
+        
+        var severityOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#94a3b8',
+                        font: {
+                            size: 11,
+                            weight: '500'
+                        },
+                        padding: 12,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#94a3b8',
+                    borderColor: 'rgba(0, 240, 255, 0.2)',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            var total = context.dataset.data.reduce(function(a, b) {
+                                return a + b;
+                            }, 0);
+                            var percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateRotate: true,
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            }
+        };
+        
+        try {
+            new Chart(severityCtx, {
+                type: 'doughnut',
+                data: severityData,
+                options: severityOptions
+            });
+            console.log('✅ تم تحميل رسم الخطورة');
+        } catch (e) {
+            console.error('❌ خطأ في رسم الخطورة:', e);
+        }
+    }
 });
 
 console.log('✅ CyberSOC Dashboard ready!');
